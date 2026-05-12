@@ -29,10 +29,11 @@ services:
     networks:
       - zedral-net
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:8001/health || exit 1"]
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8001/health')\""]
       interval: 10s
       timeout: 5s
-      retries: 5
+      retries: 6
+      start_period: 15s
 
   # ─────────────────────────────────────────────
   # M1 Demand Service
@@ -59,10 +60,11 @@ services:
     networks:
       - zedral-net
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:8002/health || exit 1"]
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8002/health')\""]
       interval: 10s
       timeout: 5s
-      retries: 5
+      retries: 6
+      start_period: 15s
 
   # ─────────────────────────────────────────────
   # M5a Material Service
@@ -89,10 +91,11 @@ services:
     networks:
       - zedral-net
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:8003/health || exit 1"]
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8003/health')\""]
       interval: 10s
       timeout: 5s
-      retries: 5
+      retries: 6
+      start_period: 15s
 
   # ─────────────────────────────────────────────
   # M6 Dispatch Service
@@ -120,10 +123,11 @@ services:
     networks:
       - zedral-net
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:8004/health || exit 1"]
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8004/health')\""]
       interval: 10s
       timeout: 5s
-      retries: 5
+      retries: 6
+      start_period: 15s
 
   # ─────────────────────────────────────────────
   # Nginx API Gateway
