@@ -1,0 +1,9 @@
+{
+  "framework": "vite",
+  "buildCommand": "cd ../.. && pnpm install && pnpm --filter @zedral/shared-types build && pnpm --filter @zedral/ops-console build",
+  "outputDirectory": "dist",
+  "installCommand": "echo 'handled in buildCommand'",
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}
