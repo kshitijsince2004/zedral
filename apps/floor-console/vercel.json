@@ -1,6 +1,6 @@
 {
   "framework": "vite",
-  "buildCommand": "cd ../.. && pnpm install && pnpm --filter @zedral/shared-types build && pnpm --filter @zedral/floor-console build",
+  "buildCommand": "cd ../.. && pnpm install && pnpm --filter @zedral/floor-console build",
   "outputDirectory": "dist",
   "installCommand": "echo 'handled in buildCommand'",
   "rewrites": [
