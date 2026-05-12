@@ -1,0 +1,6 @@
+# Test dependencies for Zedral Database Schema migration tests
+# Install with: pip install -r requirements.txt
+
+pytest>=7.0.0
+psycopg2-binary>=2.9.0
+hypothesis>=6.0.0

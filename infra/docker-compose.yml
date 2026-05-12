@@ -1,0 +1,106 @@
+version: "3.9"
+
+# Zedral — Minimal Infrastructure Stack
+# Postgres + Redpanda + Keycloak only
+# Run: docker compose -f infra/docker-compose.yml up
+
+networks:
+  zedral-net:
+    driver: bridge
+
+volumes:
+  postgres-data:
+  redpanda-data:
+  keycloak-data:
+
+services:
+  # ─────────────────────────────────────────────
+  # PostgreSQL 16 + TimescaleDB
+  # ─────────────────────────────────────────────
+  postgres:
+    image: timescale/timescaledb:2.15.3-pg16
+    platform: linux/amd64
+    container_name: zedral-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-zedral}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-zedral_dev_password}
+      POSTGRES_DB: ${POSTGRES_DB:-zedral}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./postgres/init:/docker-entrypoint-initdb.d:ro
+    networks:
+      - zedral-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-zedral} -d ${POSTGRES_DB:-zedral}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+
+  # ─────────────────────────────────────────────
+  # Redpanda (Kafka-compatible, single-node)
+  # ─────────────────────────────────────────────
+  redpanda:
+    image: redpandadata/redpanda:latest
+    container_name: zedral-redpanda
+    restart: unless-stopped
+    command:
+      - redpanda
+      - start
+      - --smp=1
+      - --memory=512M
+      - --reserve-memory=0M
+      - --overprovisioned
+      - --node-id=0
+      - --kafka-addr=PLAINTEXT://0.0.0.0:29092,OUTSIDE://0.0.0.0:9092
+      - --advertise-kafka-addr=PLAINTEXT://redpanda:29092,OUTSIDE://localhost:9092
+      - --pandaproxy-addr=0.0.0.0:8082
+      - --advertise-pandaproxy-addr=localhost:8082
+    volumes:
+      - redpanda-data:/var/lib/redpanda/data
+    networks:
+      - zedral-net
+    healthcheck:
+      test: ["CMD-SHELL", "rpk cluster health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  # Bootstrap Redpanda topics (one-shot)
+  redpanda-init:
+    image: redpandadata/redpanda:latest
+    container_name: zedral-redpanda-init
+    depends_on:
+      redpanda:
+        condition: service_healthy
+    networks:
+      - zedral-net
+    volumes:
+      - ./redpanda/bootstrap.sh:/bootstrap.sh:ro
+    entrypoint: ["/bin/bash", "/bootstrap.sh"]
+    restart: "no"
+
+  # ─────────────────────────────────────────────
+  # Keycloak (OIDC Identity Provider)
+  # ─────────────────────────────────────────────
+  keycloak:
+    image: quay.io/keycloak/keycloak:24.0
+    container_name: zedral-keycloak
+    restart: unless-stopped
+    command: ["start-dev", "--import-realm"]
+    environment:
+      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN:-admin}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-admin_dev_password}
+      KC_DB: dev-mem
+    volumes:
+      - ./keycloak/realm-export.json:/opt/keycloak/data/import/realm-export.json:ro
+    networks:
+      - zedral-net
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/health/ready || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 60s

@@ -1,0 +1,4 @@
+# file: E:\project\zedral - demoo\scripts\checks\messaging.py
+# hypothesis_version: 6.151.9
+
+[200, 9644, ', ', '--brokers', '--format', '--if-not-exists', '--tail', '200', ':', 'Event Messaging', 'bootstrap.sh', 'connect', 'container', 'description', 'docker', 'infra', 'json', 'list', 'localhost:9092', 'logs', 'm1-demand', 'm5a-material', 'name', 'partitions', 'pattern', 'reason', 'redpanda', 'refused', 'rpk', 'run_erp_consumers', 'topic', 'utf-8']

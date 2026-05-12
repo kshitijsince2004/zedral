@@ -1,0 +1,4 @@
+# file: C:\Users\ayush\AppData\Roaming\Python\Python312\site-packages\aiokafka\cluster.py
+# hypothesis_version: 6.151.9
+
+[100, 1000, 300000, 'bootstrap_servers', 'metadata_max_age_ms', 'retry_backoff_ms']

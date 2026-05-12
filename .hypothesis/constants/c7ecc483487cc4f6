@@ -1,0 +1,4 @@
+# file: C:\Users\ayush\AppData\Roaming\Python\Python312\site-packages\aiokafka\protocol\fetch.py
+# hypothesis_version: 6.151.9
+
+['aborted_transactions', 'current_leader_epoch', 'error_code', 'fetch_offset', 'first_offset', 'highwater_offset', 'isolation_level', 'last_stable_offset', 'log_start_offset', 'max_bytes', 'max_wait_time', 'message_set', 'min_bytes', 'offset', 'partition', 'partitions', 'producer_id', 'rack_id', 'replica_id', 'session_epoch', 'session_id', 'throttle_time_ms', 'topic', 'topics', 'utf-8']

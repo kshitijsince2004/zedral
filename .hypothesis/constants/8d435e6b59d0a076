@@ -1,0 +1,4 @@
+# file: E:\project\zedral - demoo\scripts\checks\api_contracts.py
+# hypothesis_version: 6.151.9
+
+[200, 404, ', ', '/', '/api/m1/queue/', '/api/m1/work-orders/', '/api/m2/customers/', '/api/m2/materials/', '/api/m2/operators/', '/api/m2/routings/', '/api/m2/shifts/', '/api/m5a/coils/', '/api/m5a/forecast/', '/api/m5a/inbound/', '/api/m5a/readiness/', '/api/m6/dispatch/', '/api/m6/lines/', '/api/m6/live-status', 'API Contracts', 'Accept', 'Content-Type', 'Transfer-Encoding', 'X-Accel-Buffering', 'application/json', 'array', 'connect', 'connection refused', 'error_page 502', 'infra', 'nginx', 'nginx.conf', 'object', 'reason', 'refused', 'return 502', 'sse', 'text/event-stream', 'utf-8']

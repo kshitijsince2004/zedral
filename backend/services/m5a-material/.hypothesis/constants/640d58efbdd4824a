@@ -1,0 +1,4 @@
+# file: C:\Users\ayush\AppData\Roaming\Python\Python312\site-packages\aiokafka\client.py
+# hypothesis_version: 6.151.9
+
+[100, 1000, 40000, 300000, 540000, 'AIOKafkaClient', 'GSSAPI', 'OAUTHBEARER', 'PLAIN', 'PLAINTEXT', 'SASL_PLAINTEXT', 'SASL_SSL', 'SCRAM-SHA-256', 'SCRAM-SHA-512', 'SSL', 'aiokafka', 'aiokafka-', 'bootstrap', 'kafka', 'localhost']

@@ -1,0 +1,4 @@
+# file: C:\Users\ayush\AppData\Roaming\Python\Python312\site-packages\aiokafka\producer\producer.py
+# hypothesis_version: 6.151.9
+
+[100, 1000, 16384, 40000, 60000, 300000, 540000, 1048576, 'PLAIN', 'PLAINTEXT', 'Sending batch to %s', 'all', 'gzip', 'kafka', 'localhost', 'lz4', 'message', 'producer', 'snappy', 'source_traceback', 'zstd']

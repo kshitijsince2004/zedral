@@ -1,0 +1,4 @@
+# file: E:\project\zedral - demoo\backend\shared\zedral_common\event_envelope.py
+# hypothesis_version: 6.151.9
+
+[',', '1.0', ':', 'EVENT_SIGNING_SECRET', 'PLANT_ID', 'hsl_ludhiana', 'server', 'system']

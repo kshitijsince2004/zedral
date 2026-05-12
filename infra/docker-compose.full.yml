@@ -1,0 +1,154 @@
+version: "3.9"
+
+# Zedral — Full Stack (infra + all 4 backend services)
+# Usage: docker compose -f infra/docker-compose.yml -f infra/docker-compose.full.yml up
+
+services:
+  # ─────────────────────────────────────────────
+  # M2 Master Data Service
+  # ─────────────────────────────────────────────
+  m2-master:
+    build:
+      context: ../backend
+      dockerfile: services/m2-master/Dockerfile
+    container_name: zedral-m2-master
+    restart: unless-stopped
+    ports:
+      - "8001:8001"
+    environment:
+      DATABASE_URL: postgresql://zedral:${POSTGRES_PASSWORD:-zedral_dev_password}@postgres:5432/zedral
+      REDPANDA_BROKERS: redpanda:29092
+      CORS_ORIGINS: http://localhost:5173,http://localhost:5174
+      AUTH_DISABLED: "${AUTH_DISABLED:-true}"
+      PLANT_ID: hsl_ludhiana
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redpanda:
+        condition: service_healthy
+    networks:
+      - zedral-net
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8001/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ─────────────────────────────────────────────
+  # M1 Demand Service
+  # ─────────────────────────────────────────────
+  m1-demand:
+    build:
+      context: ../backend
+      dockerfile: services/m1-demand/Dockerfile
+    container_name: zedral-m1-demand
+    restart: unless-stopped
+    ports:
+      - "8002:8002"
+    environment:
+      DATABASE_URL: postgresql://zedral:${POSTGRES_PASSWORD:-zedral_dev_password}@postgres:5432/zedral
+      REDPANDA_BROKERS: redpanda:29092
+      CORS_ORIGINS: http://localhost:5173,http://localhost:5174
+      AUTH_DISABLED: "${AUTH_DISABLED:-true}"
+      PLANT_ID: hsl_ludhiana
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redpanda:
+        condition: service_healthy
+    networks:
+      - zedral-net
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8002/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ─────────────────────────────────────────────
+  # M5a Material Service
+  # ─────────────────────────────────────────────
+  m5a-material:
+    build:
+      context: ../backend
+      dockerfile: services/m5a-material/Dockerfile
+    container_name: zedral-m5a-material
+    restart: unless-stopped
+    ports:
+      - "8003:8003"
+    environment:
+      DATABASE_URL: postgresql://zedral:${POSTGRES_PASSWORD:-zedral_dev_password}@postgres:5432/zedral
+      REDPANDA_BROKERS: redpanda:29092
+      CORS_ORIGINS: http://localhost:5173,http://localhost:5174
+      AUTH_DISABLED: "${AUTH_DISABLED:-true}"
+      PLANT_ID: hsl_ludhiana
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redpanda:
+        condition: service_healthy
+    networks:
+      - zedral-net
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8003/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ─────────────────────────────────────────────
+  # M6 Dispatch Service
+  # ─────────────────────────────────────────────
+  m6-dispatch:
+    build:
+      context: ../backend
+      dockerfile: services/m6-dispatch/Dockerfile
+    container_name: zedral-m6-dispatch
+    restart: unless-stopped
+    ports:
+      - "8004:8004"
+    environment:
+      DATABASE_URL: postgresql://zedral:${POSTGRES_PASSWORD:-zedral_dev_password}@postgres:5432/zedral
+      REDPANDA_BROKERS: redpanda:29092
+      CORS_ORIGINS: http://localhost:5173,http://localhost:5174
+      AUTH_DISABLED: "${AUTH_DISABLED:-true}"
+      PLANT_ID: hsl_ludhiana
+      EVENT_SIGNING_SECRET: ${EVENT_SIGNING_SECRET:-dev-secret-change-in-prod}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redpanda:
+        condition: service_healthy
+    networks:
+      - zedral-net
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8004/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ─────────────────────────────────────────────
+  # Nginx API Gateway
+  # ─────────────────────────────────────────────
+  nginx-gateway:
+    image: nginx:1.25-alpine
+    container_name: zedral-nginx-gateway
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      m2-master:
+        condition: service_healthy
+      m1-demand:
+        condition: service_healthy
+      m5a-material:
+        condition: service_healthy
+      m6-dispatch:
+        condition: service_healthy
+    networks:
+      - zedral-net
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5

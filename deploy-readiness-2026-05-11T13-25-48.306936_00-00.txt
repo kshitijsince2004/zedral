@@ -1,0 +1,32 @@
+=============================================================
+ZEDRAL DEPLOY READINESS AUDIT
+Timestamp  : 2026-05-11T13:25:48.306936+00:00
+Git SHA    : unknown
+Environment: hsl_ludhiana_staging
+=============================================================
+
+Dimension              Status  Notes
+─────────────────────────────────────────────────────────────
+Backend Health         SKIP
+DB Schema              SKIP
+API Contracts          SKIP
+Frontend Switchover    FAIL    Floor_Console: npm run typecheck failed (exit 2) — > @zedral/floor-console@0.1.0 typecheck
+> tsc --noEmit
+
+src/components/pass/PassCaptureOverlay.tsx(82,87): error TS2322: Type '{ value: number; onChange: Dispatch<SetStateAction<number>>; step: number; decimals: number; }' is not assignable to type 'IntrinsicAttributes & Props'.
+  Property 'decimals' does not exist on type 'IntrinsicAttributes & Props'.
+src/components/pass/PassCaptureOverlay.tsx(133,85): error TS2322: Type '{ value: number; onChange: Dispatch<SetStateAction<number>>; step: numbe
+Event Messaging        SKIP
+Test Coverage          FAIL    m2-master: pytest exited with code 5; m1-demand: pytest exited with code 2; m5a-material: pytest exited with code 2; m6-dispatch: pytest exited with code 2
+Security Hardening     FAIL    AUTH_DISABLED hardcoded to true in docker-compose.full.yml: 'AUTH_DISABLED: "true"'; AUTH_DISABLED hardcoded to true in docker-compose.full.yml: 'AUTH_DISABLED: "true"'; AUTH_DISABLED hardcoded to true in docker-compose.full.yml: 'AUTH_DISABLED: "true"'; AUTH_DISABLED hardcoded to true in docker-compose.full.yml: 'AUTH_DISABLED: "true"'; CORS map in nginx.conf contains only localhost origin(s): http://localhost:5173, http://localhost:5174 — update to production frontend origin(s) before go-live
+Infrastructure         PASS
+Floor Console          FAIL    Floor_Console: npm run typecheck failed (exit 2) — > @zedral/floor-console@0.1.0 typecheck
+> tsc --noEmit
+
+src/components/pass/PassCaptureOverlay.tsx(82,87): error TS2322: Type '{ value: number; onChange: Dispatch<SetStateAction<number>>; step: number; decimals: number; }' is not assignable to type 'IntrinsicAttributes & Props'.
+  Property 'decimals' does not exist on type 'IntrinsicAttributes & Props'.
+src/components/pass/PassCaptureOverlay.tsx(133,85): error TS2322: Type '{ value: number; onChange: Dispatch<SetStateAction<number>>; step: numbe
+
+─────────────────────────────────────────────────────────────
+DEPLOYMENT GATE: BLOCKED — 4 items failed
+=============================================================

@@ -1,0 +1,4 @@
+# file: C:\Users\ayush\AppData\Roaming\Python\Python312\site-packages\aiokafka\protocol\types.py
+# hypothesis_version: 6.151.9
+
+[b'...', 100, 127, 128, 4294967168, 4294967295, 18446744073709551488, 18446744073709551615, '(', ')', ', ', '>?', '>I', '>b', '>d', '>h', '>i', '>q', 'Array', 'B', 'NULL', 'Schema', 'String', 'T', '[', ']', 'utf-8']

@@ -1,0 +1,4 @@
+# file: C:\Users\ayush\AppData\Roaming\Python\Python312\site-packages\aiokafka\record\_crecords\__init__.py
+# hypothesis_version: 6.151.9
+
+['DefaultRecord', 'DefaultRecordBatch', 'LegacyRecord', 'LegacyRecordBatch', 'LegacyRecordMetadata', 'MemoryRecords', 'crc32c_cython', 'decode_varint_cython', 'encode_varint_cython']

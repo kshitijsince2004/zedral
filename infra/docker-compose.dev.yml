@@ -1,0 +1,21 @@
+version: "3.9"
+
+# Dev overrides — exposes all service ports to localhost
+# Usage: docker compose -f infra/docker-compose.yml -f infra/docker-compose.dev.yml up
+
+services:
+  postgres:
+    ports:
+      - "5432:5432"
+
+  redpanda:
+    ports:
+      - "9092:9092"      # Kafka API (external)
+      - "29092:29092"    # Kafka API (internal)
+      - "8082:8082"      # Pandaproxy REST
+      - "9644:9644"      # Admin API
+
+  keycloak:
+    ports:
+      - "8080:8080"
+    command: ["start-dev", "--import-realm"]

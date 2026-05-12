@@ -1,0 +1,4 @@
+# file: E:\project\zedral - demoo\scripts\checks\db_schema.py
+# hypothesis_version: 6.151.9
+
+[5432, '/', '/zedral', 'AUDIT_DB_URL', 'DB Schema', 'connect_timeout', 'customers', 'dbname', 'defect_codes', 'fk_defect_code', 'fk_stoppage_code', 'host', 'inbound_expected', 'localhost', 'm1_demand', 'm5a_material', 'm6_dispatch', 'master', 'materials', 'password', 'port', 'priority_overrides', 'production_passes', 'roll_assignments', 'roll_changes', 'rolls', 'sap_watermarks', 'shifts', 'stoppage_codes', 'timescaledb', 'user', 'uuid-ossp', 'wo_readiness', 'work_centres', 'zedral']

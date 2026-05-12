@@ -1,0 +1,4 @@
+# file: E:\project\zedral - demoo\backend\services\m1-demand\app\services\priority_service.py
+# hypothesis_version: 6.151.9
+
+['A', 'B', 'C', 'base_score', 'customer', 'customer_priority', 'customer_score', 'defer', 'final_score', 'high', 'hold', 'low', 'm1-demand', 'medium', 'override_adjustment', 'override_type', 'priority_class', 'proximity_score', 'required_date', 'rush', 'score', 'trigger', 'type_bonus', 'wo_id', 'wo_type']

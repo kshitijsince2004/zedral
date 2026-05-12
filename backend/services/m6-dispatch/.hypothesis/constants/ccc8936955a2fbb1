@@ -1,0 +1,4 @@
+# file: C:\Users\ayush\AppData\Roaming\Python\Python312\site-packages\hydra\_internal\grammar\utils.py
+# hypothesis_version: 6.151.9
+
+['"', "'", '(\\\\)+"', "(\\\\)+'", '\\', '\\()[]{}:=, \t', '\\\\', '__origin__']

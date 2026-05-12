@@ -1,0 +1,261 @@
+# Implementation Plan: Zedral Database Schema
+
+## Overview
+
+Single idempotent PostgreSQL 16 + TimescaleDB migration file covering four in-scope modules: `master`, `m1_demand`, `m5a_material`, `m6_dispatch`. Delivered as `infra/postgres/init/001_zedral_schema.sql`.
+
+## Tasks
+
+- [x] 1. Set up migration file scaffold and extensions
+  - Create `infra/postgres/init/` directory structure
+  - Create `001_zedral_schema.sql` with header comment (version, date, description, schema list)
+  - Add `CREATE EXTENSION IF NOT EXISTS timescaledb CASCADE`
+  - Add `CREATE EXTENSION IF NOT EXISTS pgcrypto`
+  - Add `CREATE SCHEMA IF NOT EXISTS` for all 4 in-scope schemas: `master`, `m1_demand`, `m5a_material`, `m6_dispatch`
+  - _Requirements: 1.1, 1.2, 1.3, 10.1, 10.2, 10.3, 10.6_
+
+- [ ] 2. Implement master schema tables and seed data
+  - [ ] 2.1 Create `master.plants` with CHECK constraints and seed 1 Hero Steels row
+    - `plant_id TEXT PRIMARY KEY`, `name`, `location`, `timezone`, `created_at`, `updated_at`
+    - Seed: `hsl_ludhiana`, Hero Steels Limited, Ludhiana, Asia/Kolkata
+    - _Requirements: 2.1, 2.15_
+  - [ ] 2.2 Create `master.work_centres` and seed CRS-1, CRS-2, CRS-3 rows
+    - Include `plant_id REFERENCES master.plants`, gauge/width range columns, `rated_speed_mt_hr`, `is_active`
+    - Seed CRS-1 (0.15–2.0mm, 600–1350mm), CRS-2 (0.15–2.0mm, 600–1350mm), CRS-3 (0.20–3.0mm, 600–1350mm)
+    - _Requirements: 2.2, 2.16_
+  - [ ] 2.3 Create `master.materials`
+    - `material_code TEXT PRIMARY KEY`, `description`, `material_type`, `grade`, `gauge_mm`, `width_mm`, `is_active`, audit columns
+    - _Requirements: 2.3_
+  - [ ] 2.4 Create `master.customers` with CHECK constraint on `priority_class IN ('A','B','C')`
+    - `customer_id TEXT PRIMARY KEY`, `name NOT NULL`, `priority_class CHAR(1)`, `sap_customer_ref`, audit columns
+    - _Requirements: 2.4_
+  - [ ] 2.5 Create `master.routings`
+    - `routing_id TEXT PRIMARY KEY`, `material_code REFERENCES master.materials`, `version`, `is_active`, `is_multi_pass`, audit columns
+    - _Requirements: 2.5_
+  - [ ] 2.6 Create `master.routing_operations`
+    - `PRIMARY KEY (routing_id, op_seq)`, `std_rate_mt_hr NOT NULL`, `min_qty_mt`, `max_qty_mt`
+    - _Requirements: 2.6_
+  - [ ] 2.7 Create `master.changeover_matrix` with `CHECK (setup_min > 0)` and composite index
+    - `matrix_id UUID PRIMARY KEY DEFAULT gen_random_uuid()`, all transition columns, `setup_min INTEGER NOT NULL`
+    - Index on `(wc_id, grade_from, grade_to, gauge_step, width_step)`
+    - _Requirements: 2.7, 2.20, 12.1_
+  - [ ] 2.8 Create `master.resource_calendars` with `CHECK (available_hrs >= 0)`, UNIQUE constraint, and index
+    - `calendar_id UUID PRIMARY KEY`, `UNIQUE (wc_id, calendar_date, shift)`
+    - Index on `(wc_id, calendar_date)`
+    - _Requirements: 2.8, 2.20, 12.2_
+  - [ ] 2.9 Create `master.operator_skills`
+    - `PRIMARY KEY (operator_id, wc_id, grade_family)`, `certified BOOLEAN DEFAULT FALSE`, `certified_at DATE`
+    - _Requirements: 2.9_
+  - [ ] 2.10 Create `master.rolls` with CHECK constraints on `cumulative_tonnage_mt >= 0` and `tonnage_since_grind_mt >= 0`
+    - `roll_id TEXT PRIMARY KEY`, `roll_type TEXT NOT NULL`, `current_wc_id REFERENCES master.work_centres`, all v0.2 lifecycle columns
+    - _Requirements: 2.10, 12.10_
+  - [ ] 2.11 Create `master.stoppage_codes` with `CHECK (rollup_bucket IN (7 values))` and seed 16 Hero Steels codes
+    - Comment documenting 7 rollup buckets: breakdown, material_wait, quality_hold, tool_change, power, operator_break, other
+    - Seed all 16 Hero Steels stoppage codes mapped to their rollup buckets
+    - _Requirements: 2.11, 2.18, 12.11_
+  - [ ] 2.12 Create `master.defect_codes` and seed 20+ Hero Steels defect codes
+    - `code_id TEXT PRIMARY KEY`, `defect_category`, `severity`, `is_active`, `sort_order`, audit columns
+    - Seed codes covering edge crack, surface scratch, thickness variation, shape defect, and other major cold-rolling defect categories
+    - _Requirements: 2.12, 2.19_
+  - [ ] 2.13 Create `master.emission_factors` and seed CEA grid factor row
+    - `factor_id TEXT PRIMARY KEY`, `scope CHAR(1)`, `kg_co2e_per_kwh NUMERIC(8,5) NOT NULL`, `valid_from DATE NOT NULL`
+    - Seed: `cea_grid_FY26`, scope=2, 0.82 kgCO2e/kWh, valid_from 2025-04-01
+    - _Requirements: 2.13, 2.17_
+  - [ ] 2.14 Create `master.line_share_by_family`
+    - `PRIMARY KEY (wc_id, grade_family)`, `share_pct NUMERIC(5,2) NOT NULL`, `based_on_days`, `calculated_at`
+    - _Requirements: 2.14_
+
+- [ ] 3. Implement m1_demand schema tables
+  - [ ] 3.1 Create `m1_demand.sales_orders` with indexes on `customer_id`, `required_date`, `sap_modified_at`
+    - `so_id TEXT PRIMARY KEY`, `sap_so_ref NOT NULL`, `customer_id REFERENCES master.customers`, status values: open/partial/fulfilled/cancelled
+    - Indexes: `(customer_id)`, `(sap_modified_at)`
+    - _Requirements: 3.1, 3.9_
+  - [ ] 3.2 Create `m1_demand.sales_order_items` with `ON DELETE CASCADE`
+    - `PRIMARY KEY (so_id, item_no)`, `so_id REFERENCES m1_demand.sales_orders ON DELETE CASCADE`, `material_code REFERENCES master.materials`
+    - _Requirements: 3.2_
+  - [ ] 3.3 Create `m1_demand.work_orders` with `CHECK (qty_planned_mt > 0)` and partial index on `(status, priority_score DESC)`
+    - `wo_id TEXT PRIMARY KEY`, `parent_wo_id REFERENCES m1_demand.work_orders`, all status/priority columns
+    - Status machine comment: pending → queued → scheduled → released → in_process → complete; terminal: cancelled, on_hold, rejected
+    - Partial index: `(status, priority_score DESC) WHERE status IN ('queued','scheduled')`
+    - Index: `(required_date)`, `(sap_modified_at)`
+    - _Requirements: 3.3, 3.9, 3.10, 12.3_
+  - [ ] 3.4 Create `m1_demand.wo_so_link` with composite FK to `sales_order_items`
+    - `PRIMARY KEY (wo_id, so_id, so_item_no)`, `FOREIGN KEY (so_id, so_item_no) REFERENCES m1_demand.sales_order_items`
+    - _Requirements: 3.4_
+  - [ ] 3.5 Create `m1_demand.priority_score_history` (BIGSERIAL) with index on `(wo_id, calculated_at DESC)`
+    - `history_id BIGSERIAL PRIMARY KEY`, `score_components JSONB NOT NULL`, trigger values: ingestion/scheduled_recalc/override/event_driven
+    - _Requirements: 3.5, 3.9_
+  - [ ] 3.6 Create `m1_demand.priority_overrides` with partial index on `(wo_id) WHERE is_active = TRUE`
+    - `override_id UUID PRIMARY KEY DEFAULT gen_random_uuid()`, override_type values: rush/defer/hold/release_hold
+    - _Requirements: 3.6, 3.9_
+  - [ ] 3.7 Create `m1_demand.sap_watermarks`
+    - `entity TEXT PRIMARY KEY` (values: work_orders, sales_orders), watermark timestamp columns
+    - _Requirements: 3.7_
+  - [ ] 3.8 Create `m1_demand.validation_errors` (BIGSERIAL)
+    - `error_id BIGSERIAL PRIMARY KEY`, `wo_id REFERENCES m1_demand.work_orders`, `error_detail JSONB`
+    - _Requirements: 3.8_
+
+- [ ] 4. Implement m5a_material schema tables
+  - [ ] 4.1 Create `m5a_material.coils` with CHECK constraints on `weight_remaining_mt >= 0 AND <= weight_initial_mt`, and all required indexes
+    - `coil_id TEXT PRIMARY KEY`, `parent_coil_id REFERENCES m5a_material.coils` (self-ref), stage machine comment
+    - Stage values: expected/stores/pickling/rolling/annealing/rewind/fg/dispatched/rejected/scrapped
+    - Indexes: `(current_stage)`, `(material_code, grade, gauge_mm, width_mm)`, `(reserved_for_wo) WHERE reserved_for_wo IS NOT NULL`, `(current_stage, is_quality_hold) WHERE current_stage NOT IN ('dispatched','scrapped')`
+    - _Requirements: 6.1, 6.9, 12.4, 12.5_
+  - [ ] 4.2 Create `m5a_material.coil_stage_history` (BIGSERIAL) with index on `(coil_id, transition_at DESC)`
+    - `history_id BIGSERIAL PRIMARY KEY`, triggered_by values: sap_sync/operator_scan/quality_release/reservation/planner_override
+    - _Requirements: 6.2, 6.9_
+  - [ ] 4.3 Create `m5a_material.wo_readiness` with index on `(status)`
+    - `wo_id TEXT PRIMARY KEY`, status values: ready/partial/pending/shortage, `reserved_coils JSONB`, `expected_coils JSONB`
+    - _Requirements: 6.3, 6.9_
+  - [ ] 4.4 Create `m5a_material.pre_allocations` with partial indexes on `coil_id` and `wo_id WHERE is_active = TRUE`
+    - `alloc_id UUID PRIMARY KEY DEFAULT gen_random_uuid()`, `coil_id REFERENCES m5a_material.coils`
+    - _Requirements: 6.4, 6.9_
+  - [ ] 4.5 Create `m5a_material.inbound_expected` with `GENERATED ALWAYS AS is_overdue` column and partial index
+    - `expectation_id UUID PRIMARY KEY`, `is_overdue BOOLEAN GENERATED ALWAYS AS (expected_at < CURRENT_DATE) STORED`
+    - Index: `(expected_at) WHERE is_received = FALSE`
+    - _Requirements: 6.5, 6.9_
+  - [ ] 4.6 Create `m5a_material.shortage_forecast`
+    - `forecast_id UUID PRIMARY KEY DEFAULT gen_random_uuid()`, `generated_at`, `horizon_days`, aggregate shortage counts
+    - _Requirements: 6.6_
+  - [ ] 4.7 Create `m5a_material.shortage_forecast_lines`
+    - `PRIMARY KEY (forecast_id, wo_id)`, `forecast_id REFERENCES m5a_material.shortage_forecast`
+    - _Requirements: 6.7_
+  - [ ] 4.8 Create `m5a_material.sap_watermarks`
+    - `entity TEXT PRIMARY KEY` (values: mb52_stock, mb51_movements), watermark timestamp columns
+    - _Requirements: 6.8_
+
+- [ ] 5. Implement m6_dispatch schema tables and seed config
+  - [ ] 5.1 Create `m6_dispatch.dispatch_lists` with DEFERRABLE UNIQUE constraint and indexes
+    - `dispatch_id UUID PRIMARY KEY DEFAULT gen_random_uuid()`, status values: draft/published/superseded/complete
+    - `UNIQUE (wc_id, shift_date, shift, status) DEFERRABLE INITIALLY DEFERRED`
+    - Index: `(wc_id, shift_date, shift)`
+    - _Requirements: 7.1, 7.14_
+  - [ ] 5.2 Create `m6_dispatch.dispatch_items` with `ON DELETE CASCADE` and all indexes including partial index on active statuses
+    - `item_id UUID PRIMARY KEY`, `dispatch_id REFERENCES m6_dispatch.dispatch_lists ON DELETE CASCADE`
+    - actual_status values: pending/setup_in_progress/production_in_progress/stopped/complete/cancelled/skipped
+    - Indexes: `(dispatch_id, sequence_in_shift)`, `(wo_id) WHERE wo_id IS NOT NULL`
+    - _Requirements: 7.2, 7.14_
+  - [ ] 5.3 Create `m6_dispatch.execution_events` (append-only, UUID-v7 comment, HMAC signature) with all 4 indexes
+    - `event_id UUID PRIMARY KEY` — comment: UUID-v7 time-ordered, application-generated
+    - Comment: append-only table, no UPDATE or DELETE permitted
+    - All 19 event_type values documented in comment
+    - Indexes: `(wc_id, occurred_at DESC)`, `(dispatch_item_id)`, `(event_type, occurred_at DESC)`, plus `(recorded_at DESC)` for time-range scans
+    - _Requirements: 7.3, 7.14, 7.15, 12.13_
+  - [ ] 5.4 Create `m6_dispatch.stoppages` with `GENERATED ALWAYS AS duration_min` and `is_active`, FK to `master.stoppage_codes`, and indexes
+    - `duration_min INTEGER GENERATED ALWAYS AS (CASE WHEN ended_at IS NOT NULL THEN EXTRACT(EPOCH FROM (ended_at - started_at))/60 ELSE NULL END) STORED`
+    - `is_active BOOLEAN GENERATED ALWAYS AS (ended_at IS NULL) STORED`
+    - `stoppage_code_id TEXT REFERENCES master.stoppage_codes`
+    - Indexes: `(wc_id, started_at DESC)`, `(wc_id) WHERE is_active = TRUE`
+    - _Requirements: 7.4, 7.14_
+  - [ ] 5.5 Create `m6_dispatch.rejects` with FK to `master.defect_codes` and indexes
+    - `reject_id UUID PRIMARY KEY DEFAULT gen_random_uuid()`, `defect_code_id TEXT REFERENCES master.defect_codes`
+    - _Requirements: 7.5_
+  - [ ] 5.6 Create `m6_dispatch.shift_handovers` with index on `(wc_id, shift_date DESC)`
+    - `handover_id UUID PRIMARY KEY`, `jobs_completed JSONB`, `jobs_in_progress JSONB`, `pending_items JSONB`
+    - _Requirements: 7.6_
+  - [ ] 5.7 Create `m6_dispatch.setup_timings` with `GENERATED ALWAYS AS variance_min` and composite index for matrix learning
+    - `variance_min INTEGER GENERATED ALWAYS AS (actual_duration_min - planned_duration_min) STORED`
+    - Index: `(wc_id, grade_from, grade_to, gauge_step, width_step, roll_change_reqd)`
+    - _Requirements: 7.7, 7.14_
+  - [ ] 5.8 Create `m6_dispatch.production_passes` (v0.2) with `CHECK (pass_number >= 1)`, `GENERATED ALWAYS AS duration_min`, `UNIQUE (dispatch_item_id, pass_number)`
+    - `pass_id UUID PRIMARY KEY`, `dispatch_item_id REFERENCES m6_dispatch.dispatch_items ON DELETE CASCADE`
+    - All rolling process measurement columns (thickness, force, speed, tension, coolant)
+    - Index: `(dispatch_item_id, pass_number)`
+    - _Requirements: 7.8, 7.14, 12.9_
+  - [ ] 5.9 Create `m6_dispatch.roll_assignments` (v0.2) with FK to `master.rolls`
+    - `assignment_id UUID PRIMARY KEY`, `roll_id TEXT NOT NULL REFERENCES master.rolls`
+    - _Requirements: 7.9_
+  - [ ] 5.10 Create `m6_dispatch.roll_changes` (v0.2) with FKs to `master.rolls` and `master.work_centres`, `GENERATED ALWAYS AS duration_min`
+    - `roll_out_id TEXT REFERENCES master.rolls`, `roll_in_id TEXT REFERENCES master.rolls`
+    - `duration_min INTEGER GENERATED ALWAYS AS (CASE WHEN ended_at IS NOT NULL THEN EXTRACT(EPOCH FROM (ended_at - started_at))/60 ELSE NULL END) STORED`
+    - _Requirements: 7.10_
+  - [ ] 5.11 Create `m6_dispatch.shift_crew_assignments` (v0.2) with `UNIQUE (wc_id, shift_date, shift)`
+    - `crew_members JSONB NOT NULL`, `line_incharge TEXT NOT NULL`
+    - _Requirements: 7.11_
+  - [ ] 5.12 Create `m6_dispatch.config` and seed 5 config rows
+    - Seed: `shift_start_times`, `dispatch_horizon_hours`, `frozen_window_minutes`, `stoppage_reason_required_min`, `rush_inject_requires_supervisor`
+    - _Requirements: 7.12, 7.13_
+
+- [ ] 6. Write migration smoke test and idempotency test
+  - [ ] 6.1 Set up test infrastructure using Docker (`timescale/timescaledb:latest-pg16`)
+    - Configure test runner to spin up a fresh PostgreSQL 16 + TimescaleDB container
+    - Apply `infra/postgres/init/001_zedral_schema.sql` as the migration under test
+    - _Requirements: 10.10_
+  - [ ] 6.2 Write migration smoke test: apply migration, verify zero errors, verify table counts
+    - Assert master=14, m1_demand=8, m5a_material=8, m6_dispatch=12 tables via `information_schema.tables`
+    - _Requirements: 10.10, 10.11_
+  - [ ] 6.3 Write idempotency test: apply migration twice, verify no errors on second run, verify seed row counts unchanged
+    - Apply migration a second time; assert no errors; assert seed row counts are identical (no duplicates from `ON CONFLICT DO NOTHING`)
+    - _Requirements: 1.10, 10.4, 10.5, 10.7, 10.8_
+  - [ ] 6.4 Write seed data verification tests for all seeded tables
+    - `master.plants`: 1 row, plant_id = 'hsl_ludhiana'
+    - `master.work_centres`: 3 rows (CRS-1, CRS-2, CRS-3) with correct gauge/width ranges
+    - `master.stoppage_codes`: exactly 16 rows, all 7 rollup buckets represented
+    - `master.defect_codes`: at least 20 rows
+    - `master.emission_factors`: row with factor_id = 'cea_grid_FY26', kg_co2e_per_kwh = 0.82
+    - `m6_dispatch.config`: 5 config keys present
+    - _Requirements: 2.15, 2.16, 2.17, 2.18, 2.19, 7.13, 13_
+  - [ ] 6.5 Write extension verification test
+    - Query `pg_extension` and assert both `timescaledb` and `pgcrypto` are present
+    - _Requirements: 1.2, 1.3, 10.6_
+  - [ ] 6.6 Write index existence test
+    - Query `pg_indexes` and assert all documented indexes exist for all 4 in-scope schemas
+    - _Requirements: 2.20, 3.9, 6.9, 7.14, 11.1–11.10_
+  - [ ] 6.7 Write FK constraint test (stoppages with non-existent `stoppage_code_id`)
+    - Attempt insert into `m6_dispatch.stoppages` with a non-existent `stoppage_code_id`; assert FK violation is raised
+    - _Requirements: 7.4_
+  - [ ] 6.8 Write cascade delete test (`sales_orders` → `sales_order_items`)
+    - Insert a sales order with items; delete the sales order; assert items are also deleted
+    - _Requirements: 3.2_
+
+- [ ] 7. Write property-based tests for CHECK constraints
+  - [ ] 7.1 Set up property-based testing library
+    - Install and configure appropriate PBT library for the chosen test runner language
+    - Each test must run a minimum of 100 iterations
+    - Tag each test: `Feature: zedral-database-schema, Property {N}: {property_text}`
+    - _Requirements: 12_
+  - [ ] 7.2 Property 4: `changeover_matrix setup_min <= 0` must be rejected (100+ iterations)
+    - **Property 4: CHECK constraint — changeover setup time is positive**
+    - Generate random `setup_min` values ≤ 0 (0, -1, large negatives); assert CHECK constraint violation on each insert
+    - **Validates: Requirements 12.1**
+  - [ ] 7.3 Property 5: `resource_calendars available_hrs < 0` must be rejected (100+ iterations)
+    - **Property 5: CHECK constraint — calendar availability is non-negative**
+    - Generate random `available_hrs` values < 0; assert CHECK constraint violation on each insert
+    - **Validates: Requirements 12.2**
+  - [ ] 7.4 Property 6: `work_orders qty_planned_mt <= 0` must be rejected (100+ iterations)
+    - **Property 6: CHECK constraint — work order planned quantity is positive**
+    - Generate random `qty_planned_mt` values ≤ 0; assert CHECK constraint violation on each insert
+    - **Validates: Requirements 12.3**
+  - [ ] 7.5 Property 7: `coils weight_remaining_mt` out of bounds must be rejected (100+ iterations)
+    - **Property 7: CHECK constraint — coil weight bounds are maintained**
+    - Generate `(weight_initial_mt, weight_remaining_mt)` pairs where `weight_remaining_mt < 0` or `weight_remaining_mt > weight_initial_mt`; assert CHECK constraint violation
+    - **Validates: Requirements 12.4, 12.5**
+  - [ ] 7.6 Property 8: `production_passes pass_number < 1` must be rejected (100+ iterations)
+    - **Property 8: CHECK constraint — production pass number is at least 1**
+    - Generate random `pass_number` values < 1 (0, -1, large negatives); assert CHECK constraint violation on each insert
+    - **Validates: Requirements 12.9**
+  - [ ] 7.7 Property 9: `rolls` negative tonnage counters must be rejected (100+ iterations)
+    - **Property 9: CHECK constraint — roll tonnage counters are non-negative**
+    - Generate random negative values for `cumulative_tonnage_mt` and `tonnage_since_grind_mt`; assert CHECK constraint violation on each insert
+    - **Validates: Requirements 12.10**
+  - [ ] 7.8 Property 10: `stoppage_codes` invalid `rollup_bucket` must be rejected (100+ iterations)
+    - **Property 10: CHECK constraint — stoppage rollup bucket is from the valid set**
+    - Generate random strings not in the 7-value set; assert CHECK constraint violation on each insert
+    - **Validates: Requirements 12.11**
+  - [ ] 7.9 Property 1: Schema structure completeness check across all in-scope tables
+    - **Property 1: Schema structure is complete and consistent**
+    - For each in-scope table, query `information_schema.columns`; assert required columns exist with correct `data_type`; assert audit columns on non-append-only tables; assert FK columns are `text`, JSONB columns are `jsonb`, UUID PK columns are `uuid`, BIGSERIAL PK columns are `bigint`
+    - **Validates: Requirements 1.4, 1.5, 1.6, 1.7, 1.8, 2.1–2.14, 3.1–3.8, 6.1–6.8, 7.1–7.12**
+  - [ ] 7.10 Property 2: Migration idempotency round-trip property
+    - **Property 2: Migration idempotency**
+    - Apply migration to fresh DB; record table counts and seed row counts; apply migration again; assert zero errors; assert identical table counts and seed row counts
+    - **Validates: Requirements 1.10, 10.2, 10.3, 10.4, 10.5, 10.7, 10.8**
+
+## Notes
+
+- Tasks marked with `*` are optional and can be skipped for a faster MVP
+- Each task references specific requirements for traceability
+- Checkpoints ensure incremental validation
+- Property tests validate universal correctness properties enforced by CHECK constraints
+- Unit tests validate specific examples, seed data, and integration points
+- The migration file must use `IF NOT EXISTS` guards throughout and `ON CONFLICT DO NOTHING` for all seed inserts

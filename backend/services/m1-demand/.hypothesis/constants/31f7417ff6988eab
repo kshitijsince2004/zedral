@@ -1,0 +1,4 @@
+# file: C:\Users\ayush\AppData\Roaming\Python\Python312\site-packages\aiokafka\protocol\transaction.py
+# hypothesis_version: 6.151.9
+
+['error_code', 'errors', 'group_id', 'metadata', 'offset', 'partition', 'partition_errors', 'partitions', 'producer_epoch', 'producer_id', 'throttle_time_ms', 'topic', 'topics', 'transaction_result', 'transactional_id', 'utf-8']

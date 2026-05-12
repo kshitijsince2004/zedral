@@ -1,0 +1,22 @@
+=============================================================
+ZEDRAL DEPLOY READINESS AUDIT
+Timestamp  : 2026-05-11T12:51:53.020308+00:00
+Git SHA    : unknown
+Environment: hsl_ludhiana_staging
+=============================================================
+
+Dimension              Status  Notes
+─────────────────────────────────────────────────────────────
+Backend Health         SKIP
+DB Schema              SKIP
+API Contracts          SKIP
+Frontend Switchover    FAIL    Floor_Console .env.example: missing required variable 'VITE_API_BASE_URL'; Floor_Console .env.example: missing required variable 'VITE_USE_MOCK'; Ops_Console: npm not found — cannot run typecheck. Ensure npm is installed and on PATH.; Floor_Console: npm not found — cannot run typecheck. Ensure npm is installed and on PATH.
+Event Messaging        SKIP
+Test Coverage          FAIL    m2-master: Command not found: 'pytest'; m1-demand: Command not found: 'pytest'; m5a-material: Command not found: 'pytest'; m6-dispatch: Command not found: 'pytest'; shared: Command not found: 'pytest'
+Security Hardening     FAIL    AUTH_DISABLED hardcoded to true in docker-compose.full.yml: 'AUTH_DISABLED: "true"'; AUTH_DISABLED hardcoded to true in docker-compose.full.yml: 'AUTH_DISABLED: "true"'; AUTH_DISABLED hardcoded to true in docker-compose.full.yml: 'AUTH_DISABLED: "true"'; AUTH_DISABLED hardcoded to true in docker-compose.full.yml: 'AUTH_DISABLED: "true"'; realm-export.json is not valid JSON: Expecting value: line 1 column 1 (char 0); CORS map in nginx.conf contains only localhost origin(s): http://localhost:5173, http://localhost:5174 — update to production frontend origin(s) before go-live
+Infrastructure         FAIL    Container 'zedral-nginx-gateway': unexpected state 'created' (exit_code=0); Service 'm1-demand' is missing a healthcheck stanza in docker-compose.full.yml (Req 1.5/1.6); Service 'm5a-material' is missing a healthcheck stanza in docker-compose.full.yml (Req 1.5/1.6)
+Floor Console          FAIL    Floor_Console .env.example: missing required variable 'VITE_API_BASE_URL'; Floor_Console .env.example: missing required variable 'VITE_USE_MOCK'; Ops_Console: npm not found — cannot run typecheck. Ensure npm is installed and on PATH.; Floor_Console: npm not found — cannot run typecheck. Ensure npm is installed and on PATH.
+
+─────────────────────────────────────────────────────────────
+DEPLOYMENT GATE: BLOCKED — 5 items failed
+=============================================================

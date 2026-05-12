@@ -1,0 +1,4 @@
+# file: C:\Users\ayush\AppData\Roaming\Python\Python312\site-packages\aiokafka\consumer\group_coordinator.py
+# hypothesis_version: 6.151.9
+
+[100, 1000, 3000, 5000, 10000, 30000, 300000, 'Heartbeat failed: %r', 'Heartbeat: %s[%s] %s']

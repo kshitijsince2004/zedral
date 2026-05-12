@@ -1,0 +1,4 @@
+# file: C:\Users\ayush\AppData\Roaming\Python\Python312\site-packages\aiokafka\protocol\__init__.py
+# hypothesis_version: 6.151.9
+
+['AddOffsetsToTxn', 'AddPartitionsToTxn', 'AlterConfigs', 'ApiVersions', 'ControlledShutdown', 'CreateAcls', 'CreatePartitions', 'CreateTopics', 'DeleteAcls', 'DeleteGroups', 'DeleteRecords', 'DeleteTopics', 'DescribeAcls', 'DescribeClientQuotas', 'DescribeConfigs', 'DescribeGroups', 'EndTxn', 'Fetch', 'FindCoordinator', 'Heartbeat', 'InitProducerId', 'JoinGroup', 'LeaderAndIsr', 'LeaveGroup', 'ListGroups', 'ListOffsets', 'Metadata', 'OffsetCommit', 'OffsetFetch', 'OffsetForLeaderEpoch', 'Produce', 'RenewDelegationToken', 'SaslAuthenticate', 'SaslHandshake', 'StopReplica', 'SyncGroup', 'TxnOffsetCommit', 'UpdateMetadata', 'WriteTxnMarkers']

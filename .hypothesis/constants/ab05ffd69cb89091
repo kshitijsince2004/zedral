@@ -1,0 +1,4 @@
+# file: E:\project\zedral - demoo\scripts\checks\infrastructure.py
+# hypothesis_version: 6.151.9
+
+['#', '--format', '--memory=512M', '.env.example', '/', ':', '@', 'AUTH_DISABLED', 'CORS_ORIGINS', 'EVENT_SIGNING_SECRET', 'ExitCode', 'Infrastructure', 'PLANT_ID', 'POSTGRES_DB', 'POSTGRES_PASSWORD', 'POSTGRES_USER', 'PyYAML not available', 'Running', 'Status', 'command', 'condition', 'depends_on', 'docker', 'docker-compose.yml', 'exited', 'healthcheck', 'image', 'infra', 'inspect', 'latest', 'm1-demand', 'm2-master', 'm5a-material', 'm6-dispatch', 'nginx-gateway', 'postgres', 'redpanda', 'running', 'service_healthy', 'services', 'unknown', 'utf-8', 'zedral-keycloak', 'zedral-m1-demand', 'zedral-m2-master', 'zedral-m5a-material', 'zedral-m6-dispatch', 'zedral-nginx-gateway', 'zedral-postgres', 'zedral-redpanda', 'zedral-redpanda-init', '{{json .State}}']

@@ -1,0 +1,24 @@
+{
+  "name": "zedral",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Zedral MES Platform — monorepo",
+  "scripts": {
+    "dev:ops": "pnpm --filter @zedral/ops-console dev",
+    "dev:floor": "pnpm --filter @zedral/floor-console dev",
+    "dev:infra": "docker compose -f infra/docker-compose.yml up",
+    "dev:backend": "docker compose -f infra/docker-compose.full.yml up",
+    "build": "pnpm --filter @zedral/shared-types build && pnpm --filter @zedral/ops-console build && pnpm --filter @zedral/floor-console build",
+    "lint": "pnpm -r lint",
+    "typecheck": "pnpm -r typecheck",
+    "format": "prettier --write \"**/*.{ts,tsx,js,json,md,yaml,yml,css,sql,py}\" --ignore-path .gitignore"
+  },
+  "devDependencies": {
+    "prettier": "^3.7.3",
+    "typescript": "^5.8.3"
+  },
+  "engines": {
+    "node": ">=20",
+    "pnpm": ">=9"
+  }
+}

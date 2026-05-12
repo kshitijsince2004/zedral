@@ -1,0 +1,4 @@
+# file: C:\Users\ayush\AppData\Roaming\Python\Python312\site-packages\aiokafka\consumer\consumer.py
+# hypothesis_version: 6.151.9
+
+[100, 200, 500, 1000, 1024, 3000, 5000, 10000, 300000, 540000, 52428800, 'PLAIN', 'PLAINTEXT', 'Pausing partition %s', 'Requires group_id', 'aiokafka-', 'consumer', 'kafka', 'latest', 'localhost', 'message', 'read_uncommitted', 'source_traceback']

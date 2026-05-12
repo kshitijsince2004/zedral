@@ -1,0 +1,4 @@
+# file: C:\Users\ayush\AppData\Roaming\Python\Python312\site-packages\aiokafka\protocol\coordination.py
+# hypothesis_version: 6.151.9
+
+['consumer_group', 'coordinator_id', 'coordinator_key', 'coordinator_type', 'error_code', 'error_message', 'host', 'port', 'throttle_time_ms', 'utf-8']

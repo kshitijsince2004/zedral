@@ -1,0 +1,4 @@
+# file: E:\project\zedral - demoo\backend\shared\zedral_common\kafka.py
+# hypothesis_version: 6.151.9
+
+[500, 'REDPANDA_BROKERS', 'error', 'localhost:9092', 'original_key', 'original_topic', 'payload', 'utf-8']

@@ -1,0 +1,4 @@
+# file: C:\Users\ayush\AppData\Roaming\Python\Python312\site-packages\aiokafka\consumer\fetcher.py
+# hypothesis_version: 6.151.9
+
+[0.1, 0.2, 100, 500, 1000, 1048576, 52428800, 'earliest', 'latest', 'none', 'read_committed', 'read_uncommitted']

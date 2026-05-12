@@ -1,0 +1,4 @@
+# file: E:\project\zedral - demoo\backend\services\m5a-material\app\services\readiness_service.py
+# hypothesis_version: 6.151.9
+
+[0.0, 'm5a-material', 'partial', 'pending', 'qty_planned_mt', 'ready', 'shortage', 'shortfall_qty_mt', 'status', 'total', 'wo_id']

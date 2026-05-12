@@ -1,0 +1,61 @@
+=============================================================
+ZEDRAL DEPLOY READINESS AUDIT
+Timestamp  : 2026-05-11T13:10:31.068732+00:00
+Git SHA    : unknown
+Environment: hsl_ludhiana_staging
+=============================================================
+
+Dimension              Status  Notes
+─────────────────────────────────────────────────────────────
+Backend Health         SKIP    m1-demand: connection refused — stack may not be running; nginx-gateway: connection refused — stack may not be running
+DB Schema              FAIL    Cannot connect to PostgreSQL: connection to server at "localhost" (::1), port 5432 failed: Connection refused (0x0000274D/10061)
+	Is the server running on that host and accepting TCP/IP connections?
+connection to server at "localhost" (127.0.0.1), port 5432 failed: Connection refused (0x0000274D/10061)
+	Is the server running on that host and accepting TCP/IP connections?
+API Contracts          SKIP    Gateway unreachable — stack may not be running
+Frontend Switchover    FAIL    Ops_Console: npm run typecheck failed (exit 1) — node:internal/modules/cjs/loader:1228
+  throw err;
+  ^
+
+Error: Cannot find module 'E:\project\zedral - demoo\apps\ops-console\node_modules\typescript\bin\tsc'
+    at Function._resolveFilename (node:internal/modules/cjs/loader:1225:15)
+    at Function._load (node:internal/modules/cjs/loader:1055:27)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:220:24)
+    at Function.executeUserEntryPoint [as runMain] (node:internal/modu; Floor_Console: npm run typecheck failed (exit 1) — node:internal/modules/cjs/loader:1228
+  throw err;
+  ^
+
+Error: Cannot find module 'E:\project\zedral - demoo\apps\floor-console\node_modules\typescript\bin\tsc'
+    at Function._resolveFilename (node:internal/modules/cjs/loader:1225:15)
+    at Function._load (node:internal/modules/cjs/loader:1055:27)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:220:24)
+    at Function.executeUserEntryPoint [as runMain] (node:internal/mo
+Event Messaging        SKIP    Redpanda broker unreachable — stack may not be running
+Test Coverage          FAIL    m2-master: pytest exited with code 5; m1-demand: pytest exited with code 2; m5a-material: pytest exited with code 2; m6-dispatch: pytest exited with code 2; shared: pytest exited with code 1
+Security Hardening     FAIL    AUTH_DISABLED hardcoded to true in docker-compose.full.yml: 'AUTH_DISABLED: "true"'; AUTH_DISABLED hardcoded to true in docker-compose.full.yml: 'AUTH_DISABLED: "true"'; AUTH_DISABLED hardcoded to true in docker-compose.full.yml: 'AUTH_DISABLED: "true"'; AUTH_DISABLED hardcoded to true in docker-compose.full.yml: 'AUTH_DISABLED: "true"'; CORS map in nginx.conf contains only localhost origin(s): http://localhost:5173, http://localhost:5174 — update to production frontend origin(s) before go-live
+Infrastructure         PASS
+Floor Console          FAIL    Ops_Console: npm run typecheck failed (exit 1) — node:internal/modules/cjs/loader:1228
+  throw err;
+  ^
+
+Error: Cannot find module 'E:\project\zedral - demoo\apps\ops-console\node_modules\typescript\bin\tsc'
+    at Function._resolveFilename (node:internal/modules/cjs/loader:1225:15)
+    at Function._load (node:internal/modules/cjs/loader:1055:27)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:220:24)
+    at Function.executeUserEntryPoint [as runMain] (node:internal/modu; Floor_Console: npm run typecheck failed (exit 1) — node:internal/modules/cjs/loader:1228
+  throw err;
+  ^
+
+Error: Cannot find module 'E:\project\zedral - demoo\apps\floor-console\node_modules\typescript\bin\tsc'
+    at Function._resolveFilename (node:internal/modules/cjs/loader:1225:15)
+    at Function._load (node:internal/modules/cjs/loader:1055:27)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:220:24)
+    at Function.executeUserEntryPoint [as runMain] (node:internal/mo
+
+─────────────────────────────────────────────────────────────
+DEPLOYMENT GATE: BLOCKED — 5 items failed
+=============================================================
