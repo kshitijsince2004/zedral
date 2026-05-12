@@ -1,8 +1,8 @@
 {
   "framework": "vite",
-  "buildCommand": "cd ../.. && pnpm install && pnpm --filter @zedral/ops-console build",
+  "buildCommand": "cd ../.. && pnpm install --ignore-scripts && pnpm --filter @zedral/ops-console build",
   "outputDirectory": "dist",
-  "installCommand": "echo 'handled in buildCommand'",
+  "installCommand": "echo skip",
   "rewrites": [
     { "source": "/(.*)", "destination": "/index.html" }
   ]
