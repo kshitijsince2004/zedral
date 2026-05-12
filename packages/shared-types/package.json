@@ -8,7 +8,7 @@
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
-    "build": "tsc --noEmit"
+    "build": "echo 'shared-types: no build needed'"
   },
   "devDependencies": {
     "typescript": "^5.8.3"
