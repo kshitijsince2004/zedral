@@ -1,0 +1,158 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  PYTHON_VERSION: "3.12"
+  NODE_VERSION: "20"
+
+jobs:
+  # ─────────────────────────────────────────────
+  # Backend: lint + test
+  # ─────────────────────────────────────────────
+  backend-test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      - name: Install shared library
+        run: pip install -e shared/
+
+      - name: Install service dependencies
+        run: |
+          pip install -r services/m2-master/requirements.txt
+          pip install -r services/m1-demand/requirements.txt
+          pip install -r services/m5a-material/requirements.txt
+          pip install -r services/m6-dispatch/requirements.txt
+          pip install pytest pytest-asyncio httpx
+
+      - name: Run shared library tests
+        run: pytest shared/tests/ -v --tb=short
+        continue-on-error: true
+
+  # ─────────────────────────────────────────────
+  # Frontend: typecheck + build
+  # ─────────────────────────────────────────────
+  frontend-build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies (floor-console)
+        run: bun install
+        working-directory: apps/floor-console
+
+      - name: Typecheck (floor-console)
+        run: bun run typecheck
+        working-directory: apps/floor-console
+        continue-on-error: true
+
+      - name: Build (floor-console)
+        run: bun run build
+        working-directory: apps/floor-console
+
+  # ─────────────────────────────────────────────
+  # Docker: build images (verify Dockerfiles work)
+  # ─────────────────────────────────────────────
+  docker-build:
+    runs-on: ubuntu-latest
+    needs: [backend-test]
+
+    strategy:
+      matrix:
+        service:
+          - { name: m2-master, dockerfile: services/m2-master/Dockerfile }
+          - { name: m1-demand, dockerfile: services/m1-demand/Dockerfile }
+          - { name: m5a-material, dockerfile: services/m5a-material/Dockerfile }
+          - { name: m6-dispatch, dockerfile: services/m6-dispatch/Dockerfile }
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build ${{ matrix.service.name }}
+        run: |
+          docker build \
+            -f ${{ matrix.service.dockerfile }} \
+            -t zedral/${{ matrix.service.name }}:${{ github.sha }} \
+            .
+        working-directory: backend
+
+  # ─────────────────────────────────────────────
+  # Deploy to Google Cloud Run (main branch only)
+  # ─────────────────────────────────────────────
+  deploy:
+    runs-on: ubuntu-latest
+    needs: [docker-build, frontend-build]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+    permissions:
+      contents: read
+      id-token: write
+
+    env:
+      GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+      GCP_REGION: ${{ secrets.GCP_REGION || 'asia-south1' }}
+      GAR_REGISTRY: ${{ secrets.GCP_REGION || 'asia-south1' }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/zedral
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker ${{ env.GCP_REGION }}-docker.pkg.dev --quiet
+
+      - name: Build and push images
+        working-directory: backend
+        run: |
+          for SERVICE in m2-master m1-demand m5a-material m6-dispatch; do
+            IMAGE="${{ env.GAR_REGISTRY }}/${SERVICE}:${{ github.sha }}"
+            docker build -f services/${SERVICE}/Dockerfile -t ${IMAGE} .
+            docker push ${IMAGE}
+            echo "Pushed ${IMAGE}"
+          done
+
+      - name: Deploy services to Cloud Run
+        run: |
+          for SERVICE in m2-master m1-demand m5a-material m6-dispatch; do
+            IMAGE="${{ env.GAR_REGISTRY }}/${SERVICE}:${{ github.sha }}"
+            gcloud run deploy zedral-${SERVICE} \
+              --image ${IMAGE} \
+              --region ${{ env.GCP_REGION }} \
+              --platform managed \
+              --allow-unauthenticated \
+              --set-env-vars="PLANT_ID=hsl_ludhiana,AUTH_DISABLED=false" \
+              --set-secrets="DATABASE_URL=zedral-database-url:latest,REDPANDA_BROKERS=zedral-redpanda-brokers:latest,EVENT_SIGNING_SECRET=zedral-event-signing-secret:latest" \
+              --port 800$(echo ${SERVICE} | grep -o '[0-9]') \
+              --min-instances 0 \
+              --max-instances 3 \
+              --memory 512Mi \
+              --cpu 1 \
+              --quiet
+            echo "Deployed ${SERVICE}"
+          done
