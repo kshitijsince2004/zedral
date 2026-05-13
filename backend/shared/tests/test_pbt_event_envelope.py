@@ -4,7 +4,7 @@ Property: For any valid EventEnvelope, JSON round-trip preserves all fields.
 """
 from __future__ import annotations
 
-from hypothesis import given, settings
+from hypothesis import given, settings, HealthCheck
 from hypothesis import strategies as st
 
 from zedral_common.event_envelope import EventEnvelope, EventSource
@@ -42,7 +42,7 @@ _envelope_strategy = st.builds(
 
 
 @given(_envelope_strategy)
-@settings(max_examples=100)
+@settings(max_examples=100, suppress_health_check=[HealthCheck.too_slow])
 def test_event_envelope_json_round_trip(envelope: EventEnvelope):
     """Property 1: JSON serialise → deserialise preserves all fields."""
     serialised = envelope.model_dump_json()
