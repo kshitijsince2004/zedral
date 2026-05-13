@@ -77,13 +77,20 @@ jobs:
           VITE_PLANT_ID: "hsl_ludhiana"
 
       - name: List build output
-        run: ls -la apps/floor-console/dist/ 2>/dev/null || echo "dist/ does not exist"
+        run: find apps/floor-console/dist -type f -name "*.json" -o -name "*.js" | head -30
 
-      - name: Deploy to Cloudflare Pages
+      - name: Deploy to Cloudflare
         working-directory: apps/floor-console
         run: |
           pnpm add -g wrangler
-          wrangler deploy -c dist/server/wrangler.json
+          CONFIG=$(find dist -name "wrangler.json" | head -1)
+          if [ -n "$CONFIG" ]; then
+            echo "Found config: $CONFIG"
+            wrangler deploy -c "$CONFIG"
+          else
+            echo "No wrangler.json found, deploying as Pages"
+            wrangler pages deploy dist --project-name=zedral-floor-console
+          fi
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
@@ -118,13 +125,20 @@ jobs:
           VITE_PLANT_ID: "hsl_ludhiana"
 
       - name: List build output
-        run: ls -la apps/ops-console/dist/ 2>/dev/null || echo "dist/ does not exist"
+        run: find apps/ops-console/dist -type f -name "*.json" -o -name "*.js" | head -30
 
-      - name: Deploy to Cloudflare Pages
+      - name: Deploy to Cloudflare
         working-directory: apps/ops-console
         run: |
           pnpm add -g wrangler
-          wrangler deploy -c dist/server/wrangler.json
+          CONFIG=$(find dist -name "wrangler.json" | head -1)
+          if [ -n "$CONFIG" ]; then
+            echo "Found config: $CONFIG"
+            wrangler deploy -c "$CONFIG"
+          else
+            echo "No wrangler.json found, deploying as Pages"
+            wrangler pages deploy dist --project-name=zedral-ops-console
+          fi
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
