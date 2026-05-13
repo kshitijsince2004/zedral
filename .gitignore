@@ -7,6 +7,7 @@ dist/
 build/
 .output/
 .vinxi/
+.wrangler/
 
 # Environment files (never commit secrets)
 .env
