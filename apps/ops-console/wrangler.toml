@@ -1,8 +1,5 @@
 # Cloudflare Pages configuration for Ops Console
 name = "zedral-ops-console"
 compatibility_date = "2024-12-01"
+compatibility_flags = ["nodejs_compat"]
 pages_build_output_dir = "./dist"
-
-[vars]
-VITE_PLANT_ID = "hsl_ludhiana"
-VITE_USE_MOCK = "false"
