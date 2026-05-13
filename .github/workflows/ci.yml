@@ -125,19 +125,24 @@ jobs:
           VITE_PLANT_ID: "hsl_ludhiana"
 
       - name: List build output
-        run: find apps/ops-console/dist -type f -name "*.json" -o -name "*.js" | head -30
+        run: |
+          echo "=== dist/ ==="
+          find apps/ops-console/dist -type f 2>/dev/null | head -20 || echo "no dist/"
+          echo "=== .output/ ==="
+          find apps/ops-console/.output -type f 2>/dev/null | head -20 || echo "no .output/"
 
       - name: Deploy to Cloudflare
         working-directory: apps/ops-console
         run: |
           pnpm add -g wrangler
-          CONFIG=$(find dist -name "wrangler.json" | head -1)
-          if [ -n "$CONFIG" ]; then
-            echo "Found config: $CONFIG"
-            wrangler deploy -c "$CONFIG" --name zedral-ops-console
-          else
-            echo "No wrangler.json found, deploying as Pages"
+          wrangler pages project create zedral-ops-console --production-branch=main 2>/dev/null || true
+          if [ -d ".output/public" ]; then
+            wrangler pages deploy .output/public --project-name=zedral-ops-console
+          elif [ -d "dist" ]; then
             wrangler pages deploy dist --project-name=zedral-ops-console
+          else
+            echo "ERROR: No build output found"
+            exit 1
           fi
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
