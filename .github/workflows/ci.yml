@@ -86,7 +86,7 @@ jobs:
           CONFIG=$(find dist -name "wrangler.json" | head -1)
           if [ -n "$CONFIG" ]; then
             echo "Found config: $CONFIG"
-            wrangler deploy -c "$CONFIG"
+            wrangler deploy -c "$CONFIG" --name zedral-floor-console
           else
             echo "No wrangler.json found, deploying as Pages"
             wrangler pages deploy dist --project-name=zedral-floor-console
@@ -134,7 +134,7 @@ jobs:
           CONFIG=$(find dist -name "wrangler.json" | head -1)
           if [ -n "$CONFIG" ]; then
             echo "Found config: $CONFIG"
-            wrangler deploy -c "$CONFIG"
+            wrangler deploy -c "$CONFIG" --name zedral-ops-console
           else
             echo "No wrangler.json found, deploying as Pages"
             wrangler pages deploy dist --project-name=zedral-ops-console
