@@ -18,7 +18,7 @@ services:
     environment:
       DATABASE_URL: postgresql://zedral:${POSTGRES_PASSWORD:-zedral_dev_password}@postgres:5432/zedral
       REDPANDA_BROKERS: redpanda:29092
-      CORS_ORIGINS: http://localhost:5173,http://localhost:5174
+      CORS_ORIGINS: http://localhost:5173,http://localhost:5174,https://zedral-floor-console.ayushsince04.workers.dev,https://zedral-ops-console.ayushsince04.workers.dev
       AUTH_DISABLED: "${AUTH_DISABLED:-true}"
       PLANT_ID: hsl_ludhiana
     depends_on:
@@ -49,7 +49,7 @@ services:
     environment:
       DATABASE_URL: postgresql://zedral:${POSTGRES_PASSWORD:-zedral_dev_password}@postgres:5432/zedral
       REDPANDA_BROKERS: redpanda:29092
-      CORS_ORIGINS: http://localhost:5173,http://localhost:5174
+      CORS_ORIGINS: http://localhost:5173,http://localhost:5174,https://zedral-floor-console.ayushsince04.workers.dev,https://zedral-ops-console.ayushsince04.workers.dev
       AUTH_DISABLED: "${AUTH_DISABLED:-true}"
       PLANT_ID: hsl_ludhiana
     depends_on:
@@ -80,7 +80,7 @@ services:
     environment:
       DATABASE_URL: postgresql://zedral:${POSTGRES_PASSWORD:-zedral_dev_password}@postgres:5432/zedral
       REDPANDA_BROKERS: redpanda:29092
-      CORS_ORIGINS: http://localhost:5173,http://localhost:5174
+      CORS_ORIGINS: http://localhost:5173,http://localhost:5174,https://zedral-floor-console.ayushsince04.workers.dev,https://zedral-ops-console.ayushsince04.workers.dev
       AUTH_DISABLED: "${AUTH_DISABLED:-true}"
       PLANT_ID: hsl_ludhiana
     depends_on:
@@ -111,7 +111,7 @@ services:
     environment:
       DATABASE_URL: postgresql://zedral:${POSTGRES_PASSWORD:-zedral_dev_password}@postgres:5432/zedral
       REDPANDA_BROKERS: redpanda:29092
-      CORS_ORIGINS: http://localhost:5173,http://localhost:5174
+      CORS_ORIGINS: http://localhost:5173,http://localhost:5174,https://zedral-floor-console.ayushsince04.workers.dev,https://zedral-ops-console.ayushsince04.workers.dev
       AUTH_DISABLED: "${AUTH_DISABLED:-true}"
       PLANT_ID: hsl_ludhiana
       EVENT_SIGNING_SECRET: ${EVENT_SIGNING_SECRET:-dev-secret-change-in-prod}
