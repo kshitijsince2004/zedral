@@ -83,6 +83,7 @@ jobs:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: pages deploy dist --project-name=zedral-floor-console
           workingDirectory: apps/floor-console
+          packageManager: pnpm
 
   deploy-ops-console:
     runs-on: ubuntu-latest
@@ -120,6 +121,7 @@ jobs:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: pages deploy dist --project-name=zedral-ops-console
           workingDirectory: apps/ops-console
+          packageManager: pnpm
 
   # ─────────────────────────────────────────────
   # Backend: Deploy to GCP VM via SSH
