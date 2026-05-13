@@ -67,7 +67,7 @@ jobs:
           cache: pnpm
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile --ignore-scripts
+        run: pnpm install --no-frozen-lockfile --ignore-scripts
 
       - name: Build floor-console
         run: pnpm --filter @zedral/floor-console build
@@ -115,7 +115,7 @@ jobs:
           cache: pnpm
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile --ignore-scripts
+        run: pnpm install --no-frozen-lockfile --ignore-scripts
 
       - name: Build ops-console
         run: pnpm --filter @zedral/ops-console build
@@ -125,23 +125,18 @@ jobs:
           VITE_PLANT_ID: "hsl_ludhiana"
 
       - name: List build output
-        run: |
-          echo "=== dist/ ==="
-          find apps/ops-console/dist -type f 2>/dev/null | head -20 || echo "no dist/"
-          echo "=== .output/ ==="
-          find apps/ops-console/.output -type f 2>/dev/null | head -20 || echo "no .output/"
+        run: find apps/ops-console/dist -type f -name "*.json" -o -name "*.js" | head -20
 
       - name: Deploy to Cloudflare
         working-directory: apps/ops-console
         run: |
           pnpm add -g wrangler
-          wrangler pages project create zedral-ops-console --production-branch=main 2>/dev/null || true
-          if [ -d ".output/public" ]; then
-            wrangler pages deploy .output/public --project-name=zedral-ops-console
-          elif [ -d "dist" ]; then
-            wrangler pages deploy dist --project-name=zedral-ops-console
+          CONFIG=$(find dist -name "wrangler.json" | head -1)
+          if [ -n "$CONFIG" ]; then
+            echo "Found config: $CONFIG"
+            wrangler deploy -c "$CONFIG" --name zedral-ops-console
           else
-            echo "ERROR: No build output found"
+            echo "No wrangler.json found"
             exit 1
           fi
         env:
