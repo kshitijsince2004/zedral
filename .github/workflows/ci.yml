@@ -82,8 +82,9 @@ jobs:
       - name: Deploy to Cloudflare Pages
         working-directory: apps/floor-console
         run: |
-          npx wrangler pages project create zedral-floor-console --production-branch=main 2>/dev/null || true
-          npx wrangler pages deploy dist --project-name=zedral-floor-console
+          pnpm add -g wrangler
+          wrangler pages project create zedral-floor-console --production-branch=main 2>/dev/null || true
+          wrangler pages deploy dist --project-name=zedral-floor-console
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
@@ -123,8 +124,9 @@ jobs:
       - name: Deploy to Cloudflare Pages
         working-directory: apps/ops-console
         run: |
-          npx wrangler pages project create zedral-ops-console --production-branch=main 2>/dev/null || true
-          npx wrangler pages deploy dist --project-name=zedral-ops-console
+          pnpm add -g wrangler
+          wrangler pages project create zedral-ops-console --production-branch=main 2>/dev/null || true
+          wrangler pages deploy dist --project-name=zedral-ops-console
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
