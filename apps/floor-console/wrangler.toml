@@ -2,5 +2,4 @@
 name = "zedral-floor-console"
 compatibility_date = "2024-12-01"
 compatibility_flags = ["nodejs_compat"]
-main = "./dist/_worker.js"
-assets = { directory = "./dist/assets/", binding = "ASSETS" }
+pages_build_output_dir = "./dist"

@@ -76,10 +76,14 @@ jobs:
           VITE_USE_MOCK: "false"
           VITE_PLANT_ID: "hsl_ludhiana"
 
+      - name: List build output
+        run: ls -la apps/floor-console/dist/ 2>/dev/null || echo "dist/ does not exist"
+
       - name: Deploy to Cloudflare Pages
+        working-directory: apps/floor-console
         run: |
           npx wrangler pages project create zedral-floor-console --production-branch=main 2>/dev/null || true
-          npx wrangler deploy --config apps/floor-console/wrangler.toml
+          npx wrangler pages deploy dist --project-name=zedral-floor-console
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
@@ -113,10 +117,14 @@ jobs:
           VITE_USE_MOCK: "false"
           VITE_PLANT_ID: "hsl_ludhiana"
 
+      - name: List build output
+        run: ls -la apps/ops-console/dist/ 2>/dev/null || echo "dist/ does not exist"
+
       - name: Deploy to Cloudflare Pages
+        working-directory: apps/ops-console
         run: |
           npx wrangler pages project create zedral-ops-console --production-branch=main 2>/dev/null || true
-          npx wrangler deploy --config apps/ops-console/wrangler.toml
+          npx wrangler pages deploy dist --project-name=zedral-ops-console
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
