@@ -1,4 +1,0 @@
-# file: E:\project\zedral - demoo\scripts\checks\health.py
-# hypothesis_version: 6.151.9
-
-[200, 8001, 8002, 8003, 8004, '/', 'Backend Health', 'connect', 'healthcheck', 'infra', 'm1-demand', 'm2-master', 'm5a-material', 'm6-dispatch', 'name', 'nginx-gateway', 'ok', 'port', 'r', 'reason', 'refused', 'service', 'services', 'status', 'utf-8', 'version']

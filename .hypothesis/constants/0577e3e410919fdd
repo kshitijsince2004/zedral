@@ -1,4 +1,0 @@
-# file: C:\Users\ayush\AppData\Roaming\Python\Python312\site-packages\aiokafka\protocol\group.py
-# hypothesis_version: 6.151.9
-
-['assignment', 'error_code', 'generation_id', 'group', 'group_assignment', 'group_instance_id', 'group_protocol', 'group_protocols', 'leader_id', 'member_assignment', 'member_id', 'member_metadata', 'members', 'partitions', 'protocol_metadata', 'protocol_name', 'protocol_type', 'rebalance_timeout', 'session_timeout', 'subscription', 'throttle_time_ms', 'topic', 'user_data', 'utf-8', 'version']

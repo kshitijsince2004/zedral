@@ -1,4 +1,0 @@
-# file: C:\Users\ayush\AppData\Roaming\Python\Python312\site-packages\aiokafka\conn.py
-# hypothesis_version: 6.151.9
-
-[b'Client Key', b'Server Key', 1000, 9092, 40000, '\x00', '\x01', ',', ',c=biws,r=', '-', ':', '=', '=2C', '=3D', '>i', 'AIOKafkaConnection', 'GSSAPI', 'OAUTHBEARER', 'PLAIN', 'PLAINTEXT', 'SASL_PLAINTEXT', 'SASL_SSL', 'SCRAM-SHA-', 'SCRAM-SHA-256', 'SCRAM-SHA-512', 'SSL', '[', ']', 'aiokafka', 'b', 'conn', 'create_conn', 'extensions', 'i', 'initiate', 'kafka', 'message', 'n,,', 'r', 's', 'source_traceback', 'token', 'utf-8', 'v']

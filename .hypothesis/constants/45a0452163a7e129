@@ -1,4 +1,0 @@
-# file: C:\Users\ayush\AppData\Roaming\Python\Python312\site-packages\aiokafka\protocol\metadata.py
-# hypothesis_version: 6.151.9
-
-['brokers', 'cluster_id', 'controller_id', 'error_code', 'host', 'is_internal', 'isr', 'leader', 'node_id', 'offline_replicas', 'partition', 'partitions', 'port', 'rack', 'replicas', 'throttle_time_ms', 'topic', 'topics', 'utf-8']

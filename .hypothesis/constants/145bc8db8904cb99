@@ -1,4 +1,0 @@
-# file: E:\project\zedral - demoo\scripts\checks\security.py
-# hypothesis_version: 6.151.9
-
-[' ✓', '"\'', '#', '*', ', ', '.env', '.env.', '.env.example', 'Security Hardening', 'admin', 'admin_dev_password', 'default', 'infra', 'keycloak', 'localhost', 'name', 'nginx', 'nginx.conf', 'operator', 'realm', 'realm-export.json', 'replace', 'roles', 'supervisor', 'utf-8', 'zedral_dev_password', '~*']

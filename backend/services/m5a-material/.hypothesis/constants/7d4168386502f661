@@ -1,4 +1,0 @@
-# file: E:\project\zedral - demoo\backend\services\m5a-material\app\routers\coils.py
-# hypothesis_version: 6.151.9
-
-[200, 404, 409, 422, '/coils', '/coils/{coil_id}', 'CoilResponse', 'annealing', 'coil_id', 'coils', 'created_at', 'current_stage', 'dispatched', 'expected', 'fg', 'from_attributes', 'from_stage', 'gauge_mm', 'gr_date', 'grade', 'heat_number', 'hold_ncr_id', 'is_quality_hold', 'm5a-material', 'material.coil.staged', 'material_code', 'operator_scan', 'parent_coil_id', 'pickling', 'producer', 'qty_mt', 'rejected', 'released_from_wo', 'reserved_for_wo', 'rewind', 'rolling', 'sap_coil_ref', 'scrapped', 'stores', 'supplier', 'to_stage', 'weight_initial_mt', 'weight_remaining_mt', 'width_mm', 'wo_id']

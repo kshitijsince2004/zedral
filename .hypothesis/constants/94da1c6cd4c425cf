@@ -1,4 +1,0 @@
-# file: C:\Users\ayush\AppData\Roaming\Python\Python312\site-packages\aiokafka\protocol\commit.py
-# hypothesis_version: 6.151.9
-
-['consumer_group', 'consumer_id', 'error_code', 'metadata', 'offset', 'partition', 'partitions', 'retention_time', 'throttle_time_ms', 'timestamp', 'topic', 'topics', 'utf-8']
