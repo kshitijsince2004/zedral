@@ -20,6 +20,9 @@ export interface Env {
   VITE_MOCK_ROLE: RBACRole;
   VITE_USE_SSE: boolean;
   VITE_PLANT_ID: string;
+  VITE_KEYCLOAK_URL: string;
+  VITE_KEYCLOAK_REALM: string;
+  VITE_KEYCLOAK_CLIENT_ID: string;
 }
 
 // ─── Validation ───────────────────────────────────────────────────────────────
@@ -34,10 +37,23 @@ function parseEnv(): Env {
 
   const missing: string[] = [];
 
-  // VITE_API_BASE_URL is required only when not in mock mode
-  const apiBaseUrl: string = import.meta.env["VITE_API_BASE_URL"] ?? "";
-  if (!useMock && !apiBaseUrl) {
+  // VITE_API_BASE_URL is required only when not in mock mode.
+  // Note: empty string is valid (same-origin), so check for undefined/missing only.
+  const apiBaseUrlRaw = import.meta.env["VITE_API_BASE_URL"];
+  const apiBaseUrl: string = apiBaseUrlRaw ?? "";
+  if (!useMock && apiBaseUrlRaw === undefined) {
     missing.push("VITE_API_BASE_URL");
+  }
+
+  // Keycloak env vars — required when not in mock mode
+  const keycloakUrl: string = import.meta.env["VITE_KEYCLOAK_URL"] ?? "";
+  const keycloakRealm: string = import.meta.env["VITE_KEYCLOAK_REALM"] ?? "";
+  const keycloakClientId: string = import.meta.env["VITE_KEYCLOAK_CLIENT_ID"] ?? "";
+
+  if (!useMock) {
+    if (!keycloakUrl) missing.push("VITE_KEYCLOAK_URL");
+    if (!keycloakRealm) missing.push("VITE_KEYCLOAK_REALM");
+    if (!keycloakClientId) missing.push("VITE_KEYCLOAK_CLIENT_ID");
   }
 
   if (missing.length > 0) {
@@ -63,6 +79,9 @@ function parseEnv(): Env {
     VITE_MOCK_ROLE: mockRole,
     VITE_USE_SSE: useSse,
     VITE_PLANT_ID: plantId,
+    VITE_KEYCLOAK_URL: keycloakUrl,
+    VITE_KEYCLOAK_REALM: keycloakRealm,
+    VITE_KEYCLOAK_CLIENT_ID: keycloakClientId,
   };
 }
 

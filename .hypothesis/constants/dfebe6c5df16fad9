@@ -1,4 +1,0 @@
-# file: C:\Users\ayush\AppData\Roaming\Python\Python312\site-packages\aiokafka\coordinator\protocol.py
-# hypothesis_version: 6.151.9
-
-['assignment', 'consumer', 'partitions', 'range', 'roundrobin', 'subscription', 'topic', 'user_data', 'utf-8', 'version']

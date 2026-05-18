@@ -1,4 +1,0 @@
-# file: C:\Users\ayush\AppData\Roaming\Python\Python312\site-packages\aiokafka\record\util.py
-# hypothesis_version: 6.151.9
-
-[127, 128, 129, 16383, 2097151, 268435455, 34359738367, 4398046511103, 562949953421311, 72057594037927935, 9223372036854775807, 'Out of int64 range']

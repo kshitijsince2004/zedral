@@ -1,4 +1,0 @@
-# file: C:\Users\ayush\AppData\Roaming\Python\Python312\site-packages\aiokafka\protocol\api.py
-# hypothesis_version: 6.151.9
-
-['API_KEY', 'API_VERSION', 'RESPONSE_TYPE', 'RequestStruct', 'SCHEMA', 'T', '__orig_bases__', 'aiokafka', 'api_key', 'api_version', 'client_id', 'correlation_id', 'tags', 'utf-8']

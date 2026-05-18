@@ -1,4 +1,0 @@
-# file: C:\Users\ayush\AppData\Roaming\Python\Python312\site-packages\aiokafka\record\legacy_records.py
-# hypothesis_version: 6.151.9
-
-[1000, '>I', '>Ibbii', '>Ibbqii', '>i', '>qi', '>qiIbb', '>qiIbbq', '_crc', '_offset', '_size', '_timestamp', 'crc', 'gzip', 'key', 'lz4', 'offset', 'snappy', 'timestamp', 'timestamp_type', 'value']

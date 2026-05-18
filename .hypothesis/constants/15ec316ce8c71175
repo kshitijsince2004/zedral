@@ -1,4 +1,0 @@
-# file: C:\Users\ayush\AppData\Roaming\Python\Python312\site-packages\aiokafka\protocol\offset.py
-# hypothesis_version: 6.151.9
-
-['current_leader_epoch', 'error_code', 'isolation_level', 'leader_epoch', 'max_offsets', 'offset', 'offsets', 'partition', 'partitions', 'replica_id', 'throttle_time_ms', 'timestamp', 'topic', 'topics', 'utf-8']

@@ -1,9 +1,6 @@
 import { create } from "zustand";
-import {
-  deviceContext as initialDevice,
-  mockDispatchItems,
-  mockEvents,
-} from "@/mocks/data";
+import { deviceContext as initialDevice } from "@/mocks/data";
+import { service, setTokenAccessor } from "@/services";
 import type {
   DispatchItem,
   FloorEvent,
@@ -27,6 +24,7 @@ interface State {
   // auth
   isAuthenticated: boolean;
   operator: Operator | null;
+  sessionToken: string | null;
 
   // device / connectivity
   device: typeof initialDevice;
@@ -53,8 +51,11 @@ interface State {
   undoAction: UndoAction | null;
   loginPrefill: string;
 
+  // actions — data loading
+  loadDispatch: () => Promise<void>;
+
   // actions — auth/ui
-  login: (operator: Operator) => void;
+  login: (operator: Operator, token?: string) => void;
   logout: () => void;
   setTab: (t: Tab) => void;
   setOnline: (v: boolean) => void;
@@ -111,18 +112,23 @@ const computeLineStatus = (items: DispatchItem[]): LineStatus => {
   return "idle";
 };
 
-export const useFloorConsole = create<State>((set, get) => ({
+export const useFloorConsole = create<State>((set, get) => {
+  // Wire up the token accessor so the live service can read the session token
+  setTokenAccessor(() => get().sessionToken ?? undefined);
+
+  return {
   isAuthenticated: false,
   operator: null,
+  sessionToken: null,
 
   device: initialDevice,
   isOnline: true,
   queuedEventCount: 0,
 
-  dispatch: mockDispatchItems,
-  events: mockEvents,
+  dispatch: [],
+  events: [],
 
-  lineStatus: "production_in_progress",
+  lineStatus: "idle",
   activeStoppage: null,
   rejects: [],
 
@@ -135,10 +141,17 @@ export const useFloorConsole = create<State>((set, get) => ({
   undoAction: null,
   loginPrefill: "",
 
-  login: (operator) =>
+  loadDispatch: async () => {
+    const wcId = get().device.wc_id;
+    const items = await service.getDispatchItems(wcId);
+    set({ dispatch: items, lineStatus: computeLineStatus(items) });
+  },
+
+  login: (operator, token) =>
     set({
       isAuthenticated: true,
       operator,
+      sessionToken: token ?? null,
       device: {
         ...get().device,
         operator_id: operator.operator_id,
@@ -151,6 +164,7 @@ export const useFloorConsole = create<State>((set, get) => ({
     set({
       isAuthenticated: false,
       operator: null,
+      sessionToken: null,
       activeTab: "home",
     }),
 
@@ -420,12 +434,13 @@ export const useFloorConsole = create<State>((set, get) => ({
     set({
       isAuthenticated: false,
       operator: null,
+      sessionToken: null,
       device: initialDevice,
       isOnline: true,
       queuedEventCount: 0,
-      dispatch: mockDispatchItems,
-      events: mockEvents,
-      lineStatus: "production_in_progress",
+      dispatch: [],
+      events: [],
+      lineStatus: "idle",
       activeStoppage: null,
       rejects: [],
       handover: null,
@@ -435,6 +450,8 @@ export const useFloorConsole = create<State>((set, get) => ({
       activeTab: "home",
       undoAction: null,
     });
+    // Reload dispatch data from service layer
+    get().loadDispatch();
   },
 
   jumpToState: (s) => {
@@ -480,7 +497,11 @@ export const useFloorConsole = create<State>((set, get) => ({
           : i,
       ),
     })),
-}));
+};
+});
+
+// Load initial dispatch data from the service layer
+useFloorConsole.getState().loadDispatch();
 
 // helpers (selectors)
 export const selectActiveItem = (s: State): DispatchItem | null =>

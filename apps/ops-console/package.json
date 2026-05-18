@@ -54,6 +54,7 @@
     "date-fns": "^4.1.0",
     "embla-carousel-react": "^8.6.0",
     "input-otp": "^1.4.2",
+    "keycloak-js": "^26.2.4",
     "lucide-react": "^1.8.0",
     "react": "^19.2.0",
     "react-day-picker": "^9.14.0",
@@ -73,7 +74,6 @@
   "devDependencies": {
     "@eslint/js": "^9.32.0",
     "@lovable.dev/vite-tanstack-config": "^1.4.0",
-
     "@types/node": "^22.16.5",
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
@@ -86,6 +86,7 @@
     "eslint-plugin-react-refresh": "^0.4.20",
     "fast-check": "^3.0.0",
     "globals": "^15.15.0",
+    "vitest": "^4.1.6",
     "knip": "^6.6.3",
     "prettier": "^3.7.3",
     "typescript": "^5.8.3",

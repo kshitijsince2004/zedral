@@ -56,3 +56,15 @@ coverage/
 
 # Kiro generated (keep specs, ignore generated)
 .kiro/settings/
+
+# Hypothesis (property-based testing cache)
+.hypothesis/
+
+# pytest cache
+.pytest_cache/
+
+# Generated reports
+deploy-readiness-*.txt
+
+# Temp scaffolding scripts
+_write_*.py

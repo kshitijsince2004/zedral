@@ -10,5 +10,6 @@ setup(
         "fastapi>=0.115",
         "httpx>=0.27",
         "pydantic>=2.7",
+        "python-jose[cryptography]>=3.3",
     ],
 )

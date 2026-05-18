@@ -1,4 +1,0 @@
-# file: E:\project\zedral - demoo\backend\services\m6-dispatch\app\services\live_service.py
-# hypothesis_version: 6.151.9
-
-[100, '%H:%M', 'Unassigned', 'actualMt', 'actual_mt', 'actual_status', 'at', 'category', 'coilId', 'coilMountedAt', 'coil_id', 'coil_mounted_at', 'durationMin', 'gauge', 'gauge_mm', 'id', 'idle', 'line', 'material', 'message', 'operator', 'plannedEnd', 'planned_end', 'progress', 'reason', 'running', 'setup', 'setupElapsed', 'setupNote', 'setupPlanned', 'setup_elapsed', 'setup_in_progress', 'setup_note', 'setup_planned', 'severity', 'startTime', 'start_time', 'startedAt', 'status', 'stoppage', 'stoppage_category', 'stoppage_detail', 'stoppage_duration', 'stoppage_started_at', 'stopped', 'targetMt', 'target_mt', 'width', 'width_mm', 'woId', 'wo_id', '—']
