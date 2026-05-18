@@ -140,6 +140,7 @@ services:
       - "8000:8000"
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - /var/www/zedral:/var/www/zedral:ro
     depends_on:
       m2-master:
         condition: service_healthy
