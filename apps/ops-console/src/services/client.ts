@@ -1,4 +1,5 @@
 import { env } from "@/app/env";
+import { authModule } from "@/lib/keycloak";
 
 // ─── ApiError ─────────────────────────────────────────────────────────────────
 
@@ -14,6 +15,24 @@ export class ApiError extends Error {
   }
 }
 
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+function buildHeaders(init?: RequestInit): HeadersInit {
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    ...(init?.headers as Record<string, string>),
+  };
+
+  if (!env.VITE_USE_MOCK) {
+    const token = authModule.getToken();
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
+    }
+  }
+
+  return headers;
+}
+
 // ─── apiFetch ─────────────────────────────────────────────────────────────────
 
 export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
@@ -21,11 +40,32 @@ export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> 
 
   const response = await fetch(url, {
     ...init,
-    headers: {
-      "Content-Type": "application/json",
-      ...init?.headers,
-    },
+    headers: buildHeaders(init),
   });
+
+  // On 401 in live mode: attempt token refresh and retry once
+  if (response.status === 401 && !env.VITE_USE_MOCK) {
+    const refreshed = await authModule.refreshToken();
+
+    if (refreshed) {
+      // Retry the request with the new token
+      const retryResponse = await fetch(url, {
+        ...init,
+        headers: buildHeaders(init),
+      });
+
+      if (!retryResponse.ok) {
+        const message = await retryResponse.text().catch(() => retryResponse.statusText);
+        throw new ApiError(retryResponse.status, message, path);
+      }
+
+      return retryResponse.json() as Promise<T>;
+    }
+
+    // Refresh failed — redirect to Keycloak login
+    await authModule.login();
+    throw new ApiError(401, "Session expired", path);
+  }
 
   if (!response.ok) {
     const message = await response.text().catch(() => response.statusText);

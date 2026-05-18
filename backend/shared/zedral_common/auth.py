@@ -10,6 +10,8 @@ from typing import Annotated
 import httpx
 from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from jose import JWTError, ExpiredSignatureError, jwt
+from jose.exceptions import JWTClaimsError
 
 _bearer = HTTPBearer(auto_error=False)
 
@@ -18,17 +20,37 @@ _jwks_cache: dict | None = None
 
 
 async def _get_jwks() -> dict:
+    """Fetch and cache the JWKS from Keycloak."""
     global _jwks_cache
     if _jwks_cache:
         return _jwks_cache
     keycloak_url = os.environ.get("KEYCLOAK_URL", "http://localhost:8080")
     realm = os.environ.get("KEYCLOAK_REALM", "zedral")
     jwks_url = f"{keycloak_url}/realms/{realm}/protocol/openid-connect/certs"
-    async with httpx.AsyncClient() as client:
-        resp = await client.get(jwks_url, timeout=5)
-        resp.raise_for_status()
-        _jwks_cache = resp.json()
+    try:
+        async with httpx.AsyncClient() as client:
+            resp = await client.get(jwks_url, timeout=5)
+            resp.raise_for_status()
+            _jwks_cache = resp.json()
+    except (httpx.HTTPError, httpx.TimeoutException):
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Authentication service unavailable",
+        )
     return _jwks_cache
+
+
+def _get_expected_issuer() -> str:
+    """Build the expected issuer URL from environment variables."""
+    keycloak_url = os.environ.get("KEYCLOAK_URL", "http://localhost:8080")
+    realm = os.environ.get("KEYCLOAK_REALM", "zedral")
+    return f"{keycloak_url}/realms/{realm}"
+
+
+def clear_jwks_cache() -> None:
+    """Clear the cached JWKS (useful for testing)."""
+    global _jwks_cache
+    _jwks_cache = None
 
 
 async def require_auth(
@@ -38,7 +60,11 @@ async def require_auth(
     """FastAPI dependency — validates JWT and returns decoded claims."""
     # Skip auth in dev mode
     if os.environ.get("AUTH_DISABLED", "false").lower() == "true":
-        return {"sub": "dev-user", "preferred_username": "dev"}
+        return {
+            "sub": "dev-user",
+            "preferred_username": "dev",
+            "realm_access": {"roles": ["admin"]},
+        }
 
     if not credentials:
         raise HTTPException(
@@ -46,21 +72,52 @@ async def require_auth(
             detail="Missing authentication token",
         )
 
-    # In production: validate JWT signature against Keycloak JWKS
-    # For now: basic presence check (replace with python-jose validation)
     token = credentials.credentials
     if not token:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid token",
+            detail="Missing authentication token",
         )
 
-    # TODO: decode and verify JWT with python-jose
-    # from jose import jwt, JWTError
-    # jwks = await _get_jwks()
-    # try:
-    #     claims = jwt.decode(token, jwks, algorithms=["RS256"])
-    # except JWTError:
-    #     raise HTTPException(status_code=401, detail="Invalid token")
+    # Fetch JWKS keys (cached after first call)
+    jwks = await _get_jwks()
 
-    return {"sub": "authenticated-user"}
+    # Decode and validate the JWT
+    expected_issuer = _get_expected_issuer()
+    try:
+        claims = jwt.decode(
+            token,
+            jwks,
+            algorithms=["RS256"],
+            options={
+                "verify_exp": True,
+                "verify_iss": True,
+                "verify_aud": False,  # Keycloak tokens may not have aud matching
+            },
+            issuer=expected_issuer,
+        )
+    except ExpiredSignatureError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Token has expired",
+        )
+    except JWTClaimsError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid token issuer",
+        )
+    except JWTError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid token signature",
+        )
+
+    # Extract and return relevant claims
+    realm_access = claims.get("realm_access", {})
+    roles = realm_access.get("roles", []) if isinstance(realm_access, dict) else []
+
+    return {
+        "sub": claims.get("sub", ""),
+        "preferred_username": claims.get("preferred_username", ""),
+        "realm_access": {"roles": roles},
+    }

@@ -1,0 +1,21 @@
+version: "3.9"
+
+# Production overrides — enables JWT authentication on all backend services
+# Usage: docker compose -f infra/docker-compose.yml -f infra/docker-compose.full.yml -f infra/docker-compose.prod.yml up
+
+services:
+  m2-master:
+    environment:
+      AUTH_DISABLED: "false"
+
+  m1-demand:
+    environment:
+      AUTH_DISABLED: "false"
+
+  m5a-material:
+    environment:
+      AUTH_DISABLED: "false"
+
+  m6-dispatch:
+    environment:
+      AUTH_DISABLED: "false"

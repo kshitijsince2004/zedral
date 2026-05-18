@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { useFloorConsole } from "@/store/floorConsoleStore";
+import { service } from "@/services";
+import { ServiceError } from "@/services/types";
 import { ScanLine } from "lucide-react";
 
 export function LoginScreen() {
@@ -7,16 +9,40 @@ export function LoginScreen() {
   const device = useFloorConsole((s) => s.device);
   const incomingPending = useFloorConsole((s) => s.incomingOperatorPending);
   const [value, setValue] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const submit = (operator_id: string, operator_name: string, shift: string) => {
-    login({ operator_id, operator_name, shift });
+  const handleBadgeValidation = async (badgeId: string) => {
+    setError(null);
+    setIsLoading(true);
+    try {
+      const result = await service.validateBadge(badgeId);
+      if (result.valid && result.operator) {
+        login(result.operator, result.token);
+      } else {
+        setError(result.error ?? "Invalid badge ID");
+      }
+    } catch (err) {
+      if (err instanceof ServiceError) {
+        setError(err.message || "Invalid badge ID");
+      } else {
+        setError("Cannot reach server. Please try again.");
+      }
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const onSubmit = (e: React.FormEvent) => {
+  const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!value.trim()) return;
-    submit(value.trim().toLowerCase(), `Operator ${value.trim().toUpperCase()}`, "B");
+    await handleBadgeValidation(value.trim().toLowerCase());
     setValue("");
+  };
+
+  const onQuickLogin = async () => {
+    const badgeId = incomingPending ? "op_087" : "op_042";
+    await handleBadgeValidation(badgeId);
   };
 
   return (
@@ -49,26 +75,30 @@ export function LoginScreen() {
                 placeholder="op_***"
                 className="h-16 w-full rounded-xl border-2 border-primary-foreground/20 bg-primary-foreground/5 pl-12 pr-4 font-mono text-lg font-semibold text-primary-foreground outline-none placeholder:text-primary-foreground/30 focus:border-accent"
                 autoFocus
+                disabled={isLoading}
               />
             </div>
           </label>
 
+          {error && (
+            <p className="rounded-lg bg-destructive/20 px-4 py-3 text-sm font-medium text-destructive-foreground">
+              {error}
+            </p>
+          )}
+
           <button
             type="submit"
-            disabled={!value.trim()}
+            disabled={!value.trim() || isLoading}
             className="h-16 w-full rounded-xl border-2 border-primary-foreground/20 bg-primary-foreground/5 text-base font-bold uppercase tracking-wider text-primary-foreground transition-colors hover:bg-primary-foreground/10 disabled:opacity-40"
           >
-            Sign in
+            {isLoading ? "Validating…" : "Sign in"}
           </button>
 
           <button
             type="button"
-            onClick={() =>
-              incomingPending
-                ? submit("op_087", "Suresh Patel", "B")
-                : submit("op_042", "Ramesh Kumar", "A")
-            }
-            className="h-20 w-full rounded-xl bg-accent text-base font-bold uppercase tracking-wider text-accent-foreground transition-all hover:scale-[1.02] active:scale-[0.99]"
+            disabled={isLoading}
+            onClick={onQuickLogin}
+            className="h-20 w-full rounded-xl bg-accent text-base font-bold uppercase tracking-wider text-accent-foreground transition-all hover:scale-[1.02] active:scale-[0.99] disabled:opacity-40"
           >
             ⚡ Quick Login
             <span className="mt-1 block text-xs font-medium normal-case opacity-80">

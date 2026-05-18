@@ -1,6 +1,9 @@
 import { Outlet, Link, createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
 
 import appCss from "../styles.css?url";
+import { env } from "@/app/env";
+import { authModule } from "@/lib/keycloak";
+import { AuthGuard } from "@/components/auth/AuthGuard";
 
 function NotFoundComponent() {
   return (
@@ -25,6 +28,12 @@ function NotFoundComponent() {
 }
 
 export const Route = createRootRoute({
+  beforeLoad: async () => {
+    // Initialize Keycloak adapter on app startup when not in mock mode
+    if (!env.VITE_USE_MOCK) {
+      await authModule.init();
+    }
+  },
   head: () => ({
     meta: [
       { charSet: "utf-8" },
@@ -65,5 +74,9 @@ function RootShell({ children }: { children: React.ReactNode }) {
 }
 
 function RootComponent() {
-  return <Outlet />;
+  return (
+    <AuthGuard>
+      <Outlet />
+    </AuthGuard>
+  );
 }
