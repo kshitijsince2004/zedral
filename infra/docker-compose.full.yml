@@ -130,6 +130,57 @@ services:
       start_period: 15s
 
   # ─────────────────────────────────────────────
+  # Ops Console (TanStack Start SSR)
+  # ─────────────────────────────────────────────
+  ops-console:
+    build:
+      context: ..
+      dockerfile: apps/ops-console/Dockerfile
+      args:
+        VITE_USE_MOCK: "false"
+        VITE_API_BASE_URL: ""
+        VITE_KEYCLOAK_URL: "${VITE_KEYCLOAK_URL:-}"
+        VITE_KEYCLOAK_REALM: "${VITE_KEYCLOAK_REALM:-}"
+        VITE_KEYCLOAK_CLIENT_ID: "${VITE_KEYCLOAK_CLIENT_ID:-}"
+    container_name: zedral-ops-console
+    restart: unless-stopped
+    environment:
+      PORT: "3000"
+      HOST: "0.0.0.0"
+    networks:
+      - zedral-net
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3000/ || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # ─────────────────────────────────────────────
+  # Floor Console (TanStack Start SSR)
+  # ─────────────────────────────────────────────
+  floor-console:
+    build:
+      context: ..
+      dockerfile: apps/floor-console/Dockerfile
+      args:
+        VITE_USE_MOCK: "false"
+        VITE_API_BASE_URL: ""
+    container_name: zedral-floor-console
+    restart: unless-stopped
+    environment:
+      PORT: "3001"
+      HOST: "0.0.0.0"
+    networks:
+      - zedral-net
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3001/ || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # ─────────────────────────────────────────────
   # Nginx API Gateway
   # ─────────────────────────────────────────────
   nginx-gateway:
@@ -140,8 +191,11 @@ services:
       - "8000:8000"
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      - /var/www/zedral:/var/www/zedral:ro
     depends_on:
+      ops-console:
+        condition: service_healthy
+      floor-console:
+        condition: service_healthy
       m2-master:
         condition: service_healthy
       m1-demand:
