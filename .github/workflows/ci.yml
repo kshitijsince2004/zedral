@@ -82,6 +82,16 @@ jobs:
           VITE_USE_MOCK: "false"
           VITE_API_BASE_URL: ""
 
+      - name: Ensure deploy directories exist
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            sudo mkdir -p /var/www/zedral/ops /var/www/zedral/floor
+            sudo chown -R $USER:$USER /var/www/zedral
+
       - name: Deploy frontend assets to VM
         uses: appleboy/scp-action@v0.1.7
         with:
