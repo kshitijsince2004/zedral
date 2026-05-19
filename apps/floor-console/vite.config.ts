@@ -6,11 +6,12 @@ import tailwindcss from "@tailwindcss/vite";
 import tsConfigPaths from "vite-tsconfig-paths";
 
 export default defineConfig({
+  base: "/floor/",
   plugins: [
     tsConfigPaths({ projects: ["./tsconfig.json"] }),
     tailwindcss(),
     tanstackStart(),
-    nitro(),
+    nitro({ baseURL: "/floor/" }),
     viteReact(),
   ],
   resolve: {
