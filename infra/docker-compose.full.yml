@@ -150,11 +150,11 @@ services:
     networks:
       - zedral-net
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:3000/ || exit 1"]
+      test: ["CMD-SHELL", "node -e \"fetch('http://localhost:3000/').then(r => {if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))\""]
       interval: 10s
       timeout: 5s
       retries: 5
-      start_period: 10s
+      start_period: 15s
 
   # ─────────────────────────────────────────────
   # Floor Console (TanStack Start SSR)
@@ -174,11 +174,11 @@ services:
     networks:
       - zedral-net
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:3001/ || exit 1"]
+      test: ["CMD-SHELL", "node -e \"fetch('http://localhost:3001/').then(r => {if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))\""]
       interval: 10s
       timeout: 5s
       retries: 5
-      start_period: 10s
+      start_period: 15s
 
   # ─────────────────────────────────────────────
   # Nginx API Gateway
