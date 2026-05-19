@@ -1,4 +1,3 @@
-import Keycloak from "keycloak-js";
 import type { RBACRole } from "@/types/common";
 
 // ─── Config ───────────────────────────────────────────────────────────────────
@@ -39,12 +38,13 @@ function getKeycloakConfig(): KeycloakConfig {
   return { url, realm, clientId };
 }
 
-// ─── Singleton instance ───────────────────────────────────────────────────────
+// ─── Singleton instance (lazy-loaded to avoid SSR window error) ───────────────
 
-let keycloakInstance: Keycloak | null = null;
+let keycloakInstance: any | null = null;
 
-function getKeycloakInstance(): Keycloak {
+async function getKeycloakInstance(): Promise<any> {
   if (!keycloakInstance) {
+    const { default: Keycloak } = await import("keycloak-js");
     const config = getKeycloakConfig();
     keycloakInstance = new Keycloak({
       url: config.url,
@@ -59,9 +59,9 @@ function getKeycloakInstance(): Keycloak {
 
 const VALID_ROLES: RBACRole[] = ["admin", "supervisor", "operator"];
 
-function extractRoles(kc: Keycloak): RBACRole[] {
+function extractRoles(kc: any): RBACRole[] {
   const realmRoles = kc.realmAccess?.roles ?? [];
-  return realmRoles.filter((r): r is RBACRole =>
+  return realmRoles.filter((r: string): r is RBACRole =>
     VALID_ROLES.includes(r as RBACRole)
   );
 }
@@ -70,7 +70,7 @@ function extractRoles(kc: Keycloak): RBACRole[] {
 
 export const authModule: AuthModule = {
   async init(): Promise<boolean> {
-    const kc = getKeycloakInstance();
+    const kc = await getKeycloakInstance();
 
     // Configure silent token refresh when token is within 60 seconds of expiry
     kc.onTokenExpired = () => {
@@ -91,22 +91,21 @@ export const authModule: AuthModule = {
   },
 
   async login(): Promise<void> {
-    const kc = getKeycloakInstance();
+    const kc = await getKeycloakInstance();
     await kc.login();
   },
 
   async logout(): Promise<void> {
-    const kc = getKeycloakInstance();
+    const kc = await getKeycloakInstance();
     await kc.logout({ redirectUri: window.location.origin });
   },
 
   getToken(): string | undefined {
-    const kc = getKeycloakInstance();
-    return kc.token;
+    return keycloakInstance?.token;
   },
 
   async refreshToken(): Promise<boolean> {
-    const kc = getKeycloakInstance();
+    const kc = await getKeycloakInstance();
     try {
       const refreshed = await kc.updateToken(60);
       return refreshed;
@@ -116,24 +115,21 @@ export const authModule: AuthModule = {
   },
 
   isAuthenticated(): boolean {
-    const kc = getKeycloakInstance();
-    return kc.authenticated ?? false;
+    return keycloakInstance?.authenticated ?? false;
   },
 
   getUserRoles(): RBACRole[] {
-    const kc = getKeycloakInstance();
-    return extractRoles(kc);
+    if (!keycloakInstance) return [];
+    return extractRoles(keycloakInstance);
   },
 
   onTokenExpired(callback: () => void): void {
-    const kc = getKeycloakInstance();
-    const originalHandler = kc.onTokenExpired;
-    kc.onTokenExpired = () => {
-      // Run the default silent refresh logic
+    if (!keycloakInstance) return;
+    const originalHandler = keycloakInstance.onTokenExpired;
+    keycloakInstance.onTokenExpired = () => {
       if (originalHandler) {
         originalHandler();
       }
-      // Also invoke the user-provided callback
       callback();
     };
   },
