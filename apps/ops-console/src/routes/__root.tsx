@@ -30,7 +30,8 @@ function NotFoundComponent() {
 export const Route = createRootRoute({
   beforeLoad: async () => {
     // Initialize auth adapter on app startup when not in mock mode
-    if (!env.VITE_USE_MOCK) {
+    // Skip during SSR (no window available)
+    if (!env.VITE_USE_MOCK && typeof window !== "undefined") {
       const authenticated = await authModule.init();
       // If auth returned true (either real Keycloak or no-op), set default admin session
       if (authenticated && !authModule.getToken()) {
