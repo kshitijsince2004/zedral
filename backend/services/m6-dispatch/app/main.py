@@ -12,7 +12,7 @@ from zedral_common.health import make_health_router
 from zedral_common.kafka import create_producer
 from zedral_common.logging import configure_logging
 
-from .routers import alerts, dispatch, events, handovers, lines, live_status, master, passes, rejects, stoppages
+from .routers import alerts, auth, dispatch, events, handovers, lines, live_status, master, passes, rejects, stoppages
 
 SERVICE_NAME = "m6-dispatch"
 VERSION = "0.2.0"
@@ -40,6 +40,7 @@ app.add_middleware(
 )
 
 app.include_router(make_health_router(SERVICE_NAME, VERSION))
+app.include_router(auth.router, prefix="/api/v1")
 app.include_router(dispatch.router, prefix="/api/v1")
 app.include_router(events.router, prefix="/api/v1")
 app.include_router(lines.router, prefix="/api/v1")
