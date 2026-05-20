@@ -963,15 +963,14 @@ CREATE TABLE IF NOT EXISTS m5a_material.inbound_expected (
     expected_weight_mt NUMERIC(10,3) NOT NULL,             -- Expected weight in MT
     supplier           TEXT,                               -- Supplier name
     expected_at        DATE,                               -- Expected arrival date
-    is_overdue         BOOLEAN GENERATED ALWAYS AS 
-        (CASE WHEN expected_at IS NOT NULL AND expected_at < CURRENT_DATE THEN TRUE ELSE FALSE END) STORED,  -- Computed overdue flag
+    is_overdue         BOOLEAN DEFAULT FALSE,              -- Overdue flag (updated by application or scheduled job)
     is_received        BOOLEAN DEFAULT FALSE,              -- Received flag
     received_at        TIMESTAMPTZ,                        -- When received
     notes              TEXT,                               -- Additional notes
     created_at         TIMESTAMPTZ DEFAULT now()
 );
 
-COMMENT ON TABLE m5a_material.inbound_expected IS 'Expected inbound coils. is_overdue GENERATED from expected_at < CURRENT_DATE. Partial index on unreceived coils only.';
+COMMENT ON TABLE m5a_material.inbound_expected IS 'Expected inbound coils. is_overdue computed by application logic. Partial index on unreceived coils only.';
 
 -- Partial index for unreceived expected coils by date
 CREATE INDEX IF NOT EXISTS idx_inbound_expected_unreceived
