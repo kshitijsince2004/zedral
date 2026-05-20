@@ -29,13 +29,9 @@ function NotFoundComponent() {
 
 export const Route = createRootRoute({
   beforeLoad: async () => {
-    // Initialize Keycloak adapter on app startup when not in mock mode and auth is enabled
-    if (!env.VITE_USE_MOCK && env.VITE_KEYCLOAK_URL && !env.VITE_KEYCLOAK_URL.includes("placeholder")) {
-      try {
-        await authModule.init();
-      } catch (e) {
-        console.warn("[auth] Keycloak initialization failed, continuing without auth:", e);
-      }
+    // Initialize auth adapter on app startup when not in mock mode
+    if (!env.VITE_USE_MOCK) {
+      await authModule.init();
     }
   },
   head: () => ({
