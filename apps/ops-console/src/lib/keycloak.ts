@@ -61,24 +61,23 @@ const realAuthModule: AuthModule = {
       kc.updateToken(60).catch(() => { kc.login(); });
     };
     const authenticated = await kc.init({
-      onLoad: "check-sso",
-      silentCheckSsoRedirectUri: window.location.origin + "/silent-check-sso.html",
+      onLoad: "login-required",
       checkLoginIframe: false,
     });
     return authenticated;
   },
   async login() {
-    const kc = await getKeycloakInstance();
-    await kc.login();
+    if (!keycloakInstance) return;
+    await keycloakInstance.login();
   },
   async logout() {
-    const kc = await getKeycloakInstance();
-    await kc.logout({ redirectUri: window.location.origin });
+    if (!keycloakInstance) return;
+    await keycloakInstance.logout({ redirectUri: window.location.origin });
   },
   getToken() { return keycloakInstance?.token; },
   async refreshToken() {
-    const kc = await getKeycloakInstance();
-    try { return await kc.updateToken(60); } catch { return false; }
+    if (!keycloakInstance) return false;
+    try { return await keycloakInstance.updateToken(60); } catch { return false; }
   },
   isAuthenticated() { return keycloakInstance?.authenticated ?? false; },
   getUserRoles() { return keycloakInstance ? extractRoles(keycloakInstance) : []; },
