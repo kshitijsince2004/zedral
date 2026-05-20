@@ -76,7 +76,7 @@ async function request<T>(
 export const liveService: FloorService = {
   async getDispatchItems(wcId: string): Promise<DispatchItem[]> {
     return request<DispatchItem[]>(
-      `dispatch?wc=${encodeURIComponent(wcId)}`,
+      `dispatch/${encodeURIComponent(wcId)}`,
     );
   },
 
