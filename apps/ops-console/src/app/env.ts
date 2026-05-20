@@ -51,9 +51,12 @@ function parseEnv(): Env {
   const keycloakClientId: string = import.meta.env["VITE_KEYCLOAK_CLIENT_ID"] ?? "";
 
   if (!useMock) {
-    if (!keycloakUrl) missing.push("VITE_KEYCLOAK_URL");
-    if (!keycloakRealm) missing.push("VITE_KEYCLOAK_REALM");
-    if (!keycloakClientId) missing.push("VITE_KEYCLOAK_CLIENT_ID");
+    if (!keycloakUrl || keycloakUrl.includes("placeholder")) {
+      // Auth disabled — Keycloak not configured, skip validation
+    } else {
+      if (!keycloakRealm) missing.push("VITE_KEYCLOAK_REALM");
+      if (!keycloakClientId) missing.push("VITE_KEYCLOAK_CLIENT_ID");
+    }
   }
 
   if (missing.length > 0) {

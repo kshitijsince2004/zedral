@@ -11,26 +11,26 @@ interface Props {
  * Route-level wrapper that enforces Keycloak authentication.
  *
  * - When `VITE_USE_MOCK` is true (default), renders children directly (no auth).
- * - When `VITE_USE_MOCK` is false, checks `keycloak.authenticated`.
- *   If unauthenticated, triggers `keycloak.login()` to redirect to Keycloak.
+ * - When Keycloak URL is a placeholder or empty, renders children (auth disabled).
+ * - When `VITE_USE_MOCK` is false and Keycloak is configured, checks authentication.
  */
 export function AuthGuard({ children }: Props) {
   const isMockMode = env.VITE_USE_MOCK;
+  const isAuthDisabled = !env.VITE_KEYCLOAK_URL || env.VITE_KEYCLOAK_URL.includes("placeholder");
 
   useEffect(() => {
-    if (!isMockMode && !authModule.isAuthenticated()) {
+    if (!isMockMode && !isAuthDisabled && !authModule.isAuthenticated()) {
       authModule.login();
     }
-  }, [isMockMode]);
+  }, [isMockMode, isAuthDisabled]);
 
-  // In mock mode, always render children (bypass auth)
-  if (isMockMode) {
+  // Bypass auth in mock mode or when auth is disabled
+  if (isMockMode || isAuthDisabled) {
     return <>{children}</>;
   }
 
-  // In live mode, only render children when authenticated
+  // In live mode with auth, only render children when authenticated
   if (!authModule.isAuthenticated()) {
-    // Return null while redirecting to Keycloak login
     return null;
   }
 
