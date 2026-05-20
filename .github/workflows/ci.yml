@@ -75,7 +75,8 @@ jobs:
             export VITE_KEYCLOAK_REALM="${{ secrets.VITE_KEYCLOAK_REALM }}"
             export VITE_KEYCLOAK_CLIENT_ID="${{ secrets.VITE_KEYCLOAK_CLIENT_ID }}"
             docker compose -f docker-compose.yml -f docker-compose.full.yml down
-            docker compose -f docker-compose.yml -f docker-compose.full.yml up --build -d
+            docker compose -f docker-compose.yml -f docker-compose.full.yml build --no-cache ops-console floor-console
+            docker compose -f docker-compose.yml -f docker-compose.full.yml up -d
 
             echo "=== Waiting for services to be healthy ==="
             sleep 30
