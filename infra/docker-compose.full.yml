@@ -139,9 +139,10 @@ services:
       args:
         VITE_USE_MOCK: "false"
         VITE_API_BASE_URL: ""
-        VITE_KEYCLOAK_URL: "${VITE_KEYCLOAK_URL:-http://placeholder}"
+        VITE_AUTH_DISABLED: "false"
+        VITE_KEYCLOAK_URL: "${VITE_KEYCLOAK_URL:-http://136.111.39.179:8080}"
         VITE_KEYCLOAK_REALM: "${VITE_KEYCLOAK_REALM:-zedral}"
-        VITE_KEYCLOAK_CLIENT_ID: "${VITE_KEYCLOAK_CLIENT_ID:-ops-console}"
+        VITE_KEYCLOAK_CLIENT_ID: "${VITE_KEYCLOAK_CLIENT_ID:-zedral-spa}"
     container_name: zedral-ops-console
     restart: unless-stopped
     environment:
