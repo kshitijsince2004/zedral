@@ -66,16 +66,23 @@ function extractRoles(kc: any): RBACRole[] {
   );
 }
 
+// ─── Check if auth is enabled ─────────────────────────────────────────────────
+
+function isAuthEnabled(): boolean {
+  const url = import.meta.env["VITE_KEYCLOAK_URL"] as string | undefined;
+  return !!url && !url.includes("placeholder");
+}
+
 // ─── Auth module implementation ───────────────────────────────────────────────
 
 export const authModule: AuthModule = {
   async init(): Promise<boolean> {
+    if (!isAuthEnabled()) return false;
     const kc = await getKeycloakInstance();
 
     // Configure silent token refresh when token is within 60 seconds of expiry
     kc.onTokenExpired = () => {
       kc.updateToken(60).catch(() => {
-        // Refresh failed — session is invalid, force re-login
         kc.login();
       });
     };
@@ -91,20 +98,24 @@ export const authModule: AuthModule = {
   },
 
   async login(): Promise<void> {
+    if (!isAuthEnabled()) return;
     const kc = await getKeycloakInstance();
     await kc.login();
   },
 
   async logout(): Promise<void> {
+    if (!isAuthEnabled()) return;
     const kc = await getKeycloakInstance();
     await kc.logout({ redirectUri: window.location.origin });
   },
 
   getToken(): string | undefined {
+    if (!isAuthEnabled()) return undefined;
     return keycloakInstance?.token;
   },
 
   async refreshToken(): Promise<boolean> {
+    if (!isAuthEnabled()) return false;
     const kc = await getKeycloakInstance();
     try {
       const refreshed = await kc.updateToken(60);
@@ -115,16 +126,18 @@ export const authModule: AuthModule = {
   },
 
   isAuthenticated(): boolean {
+    if (!isAuthEnabled()) return true; // When auth disabled, treat as authenticated
     return keycloakInstance?.authenticated ?? false;
   },
 
   getUserRoles(): RBACRole[] {
+    if (!isAuthEnabled()) return ["admin"];
     if (!keycloakInstance) return [];
     return extractRoles(keycloakInstance);
   },
 
   onTokenExpired(callback: () => void): void {
-    if (!keycloakInstance) return;
+    if (!isAuthEnabled() || !keycloakInstance) return;
     const originalHandler = keycloakInstance.onTokenExpired;
     keycloakInstance.onTokenExpired = () => {
       if (originalHandler) {
