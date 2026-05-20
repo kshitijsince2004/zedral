@@ -45,25 +45,30 @@ export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> 
 
   // On 401 in live mode: attempt token refresh and retry once
   if (response.status === 401 && !env.VITE_USE_MOCK) {
-    const refreshed = await authModule.refreshToken();
+    const isAuthEnabled = env.VITE_KEYCLOAK_URL && !env.VITE_KEYCLOAK_URL.includes("placeholder");
 
-    if (refreshed) {
-      // Retry the request with the new token
-      const retryResponse = await fetch(url, {
-        ...init,
-        headers: buildHeaders(init),
-      });
+    if (isAuthEnabled) {
+      const refreshed = await authModule.refreshToken();
 
-      if (!retryResponse.ok) {
-        const message = await retryResponse.text().catch(() => retryResponse.statusText);
-        throw new ApiError(retryResponse.status, message, path);
+      if (refreshed) {
+        // Retry the request with the new token
+        const retryResponse = await fetch(url, {
+          ...init,
+          headers: buildHeaders(init),
+        });
+
+        if (!retryResponse.ok) {
+          const message = await retryResponse.text().catch(() => retryResponse.statusText);
+          throw new ApiError(retryResponse.status, message, path);
+        }
+
+        return retryResponse.json() as Promise<T>;
       }
 
-      return retryResponse.json() as Promise<T>;
+      // Refresh failed — redirect to Keycloak login
+      await authModule.login();
     }
 
-    // Refresh failed — redirect to Keycloak login
-    await authModule.login();
     throw new ApiError(401, "Session expired", path);
   }
 
