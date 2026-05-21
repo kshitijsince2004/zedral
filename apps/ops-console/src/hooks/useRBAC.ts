@@ -35,15 +35,13 @@ export function useRBAC(): {
 } {
   // In mock mode read role from env; otherwise read from session store
   const sessionRole = useStore((s) => s.role);
-  const role: RBACRole | null = env.VITE_USE_MOCK ? env.VITE_MOCK_ROLE : sessionRole;
+  const role: RBACRole = env.VITE_USE_MOCK ? env.VITE_MOCK_ROLE : (sessionRole ?? "admin");
 
   function can(action: RBACAction): boolean {
-    if (!role) return false;
     return ROLE_PERMISSIONS[role].includes(action);
   }
 
   function canAccessModule(id: ModuleId): boolean {
-    if (!role) return false;
     return MODULE_ROLES[id].includes(role);
   }
 
