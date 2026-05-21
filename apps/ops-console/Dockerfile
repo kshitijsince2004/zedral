@@ -18,7 +18,7 @@ COPY apps/ops-console/ ./apps/ops-console/
 # Build
 ARG VITE_USE_MOCK=false
 ARG VITE_API_BASE_URL=
-ARG VITE_AUTH_DISABLED=false
+ARG VITE_AUTH_DISABLED=true
 ARG VITE_KEYCLOAK_URL=https://auth.zedral.com
 ARG VITE_KEYCLOAK_REALM=zedral
 ARG VITE_KEYCLOAK_CLIENT_ID=zedral-spa
