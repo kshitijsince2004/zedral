@@ -2,6 +2,7 @@
   "realm": "zedral",
   "enabled": true,
   "displayName": "Zedral MES",
+  "sslRequired": "NONE",
   "roles": {
     "realm": [
       {
