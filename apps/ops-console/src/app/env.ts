@@ -28,12 +28,9 @@ export interface Env {
 // ─── Validation ───────────────────────────────────────────────────────────────
 
 function parseEnv(): Env {
-  // VITE_USE_MOCK defaults to true when absent — mock mode is the safe default
+  // VITE_USE_MOCK: explicitly check for "false" or "0" to disable mock mode
   const useMockRaw = import.meta.env["VITE_USE_MOCK"];
-  const useMock: boolean =
-    useMockRaw === undefined || useMockRaw === null || useMockRaw === ""
-      ? true
-      : useMockRaw !== "false" && useMockRaw !== "0";
+  const useMock: boolean = useMockRaw !== "false" && useMockRaw !== "0";
 
   const missing: string[] = [];
 
