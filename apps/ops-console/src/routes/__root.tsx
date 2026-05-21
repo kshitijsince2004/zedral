@@ -32,24 +32,31 @@ export const Route = createRootRoute({
     // Initialize auth adapter on app startup when not in mock mode
     // Skip during SSR (no window available)
     if (!env.VITE_USE_MOCK && typeof window !== "undefined") {
-      const authenticated = await authModule.init();
-      if (authenticated) {
-        const { useStore } = await import("@/state/store");
-        const token = authModule.getToken();
-        if (token) {
-          // Real Keycloak auth — extract roles from token
-          try {
-            const payload = JSON.parse(atob(token.split(".")[1]));
-            const { mapKeycloakRole } = await import("@/lib/roleMapper");
-            const role = mapKeycloakRole(payload);
-            useStore.getState().setSession(payload.preferred_username || "user", role);
-          } catch {
-            useStore.getState().setSession("user", "admin");
+      try {
+        const authenticated = await authModule.init();
+        if (authenticated) {
+          const { useStore } = await import("@/state/store");
+          const token = authModule.getToken();
+          if (token) {
+            // Real Keycloak auth — extract roles from token
+            try {
+              const payload = JSON.parse(atob(token.split(".")[1]));
+              const { mapKeycloakRole } = await import("@/lib/roleMapper");
+              const role = mapKeycloakRole(payload);
+              useStore.getState().setSession(payload.preferred_username || "user", role);
+            } catch {
+              useStore.getState().setSession("user", "admin");
+            }
+          } else {
+            // Auth disabled (no-op module) — set default admin session
+            useStore.getState().setSession("admin", "admin");
           }
-        } else {
-          // Auth disabled (no-op module) — set default admin session
-          useStore.getState().setSession("admin", "admin");
         }
+      } catch (e) {
+        console.error("[auth] Keycloak init failed:", e);
+        // Fallback: set admin session so app is usable
+        const { useStore } = await import("@/state/store");
+        useStore.getState().setSession("admin", "admin");
       }
     }
   },
