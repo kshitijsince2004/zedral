@@ -100,9 +100,5 @@ function RootShell({ children }: { children: React.ReactNode }) {
 }
 
 function RootComponent() {
-  return (
-    <AuthGuard>
-      <Outlet />
-    </AuthGuard>
-  );
+  return <Outlet />;
 }
