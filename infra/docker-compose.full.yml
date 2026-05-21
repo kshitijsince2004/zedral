@@ -18,7 +18,7 @@ services:
     environment:
       DATABASE_URL: postgresql://zedral:${POSTGRES_PASSWORD:-zedral_dev_password}@postgres:5432/zedral
       REDPANDA_BROKERS: redpanda:29092
-      CORS_ORIGINS: http://localhost:5173,http://localhost:5174,http://136.111.39.179:8000,https://zedral-floor-console.ayushsince04.workers.dev,https://zedral-ops-console.ayushsince04.workers.dev
+      CORS_ORIGINS: http://localhost:5173,http://localhost:5174,https://ops.zedral.com,https://floor.zedral.com,http://136.111.39.179:8000
       AUTH_DISABLED: "${AUTH_DISABLED:-true}"
       PLANT_ID: hsl_ludhiana
     depends_on:
@@ -49,7 +49,7 @@ services:
     environment:
       DATABASE_URL: postgresql://zedral:${POSTGRES_PASSWORD:-zedral_dev_password}@postgres:5432/zedral
       REDPANDA_BROKERS: redpanda:29092
-      CORS_ORIGINS: http://localhost:5173,http://localhost:5174,http://136.111.39.179:8000,https://zedral-floor-console.ayushsince04.workers.dev,https://zedral-ops-console.ayushsince04.workers.dev
+      CORS_ORIGINS: http://localhost:5173,http://localhost:5174,https://ops.zedral.com,https://floor.zedral.com,http://136.111.39.179:8000
       AUTH_DISABLED: "${AUTH_DISABLED:-true}"
       PLANT_ID: hsl_ludhiana
     depends_on:
@@ -80,7 +80,7 @@ services:
     environment:
       DATABASE_URL: postgresql://zedral:${POSTGRES_PASSWORD:-zedral_dev_password}@postgres:5432/zedral
       REDPANDA_BROKERS: redpanda:29092
-      CORS_ORIGINS: http://localhost:5173,http://localhost:5174,http://136.111.39.179:8000,https://zedral-floor-console.ayushsince04.workers.dev,https://zedral-ops-console.ayushsince04.workers.dev
+      CORS_ORIGINS: http://localhost:5173,http://localhost:5174,https://ops.zedral.com,https://floor.zedral.com,http://136.111.39.179:8000
       AUTH_DISABLED: "${AUTH_DISABLED:-true}"
       PLANT_ID: hsl_ludhiana
     depends_on:
@@ -111,7 +111,7 @@ services:
     environment:
       DATABASE_URL: postgresql://zedral:${POSTGRES_PASSWORD:-zedral_dev_password}@postgres:5432/zedral
       REDPANDA_BROKERS: redpanda:29092
-      CORS_ORIGINS: http://localhost:5173,http://localhost:5174,http://136.111.39.179:8000,https://zedral-floor-console.ayushsince04.workers.dev,https://zedral-ops-console.ayushsince04.workers.dev
+      CORS_ORIGINS: http://localhost:5173,http://localhost:5174,https://ops.zedral.com,https://floor.zedral.com,http://136.111.39.179:8000
       AUTH_DISABLED: "${AUTH_DISABLED:-true}"
       PLANT_ID: hsl_ludhiana
       EVENT_SIGNING_SECRET: ${EVENT_SIGNING_SECRET:-dev-secret-change-in-prod}
@@ -140,7 +140,7 @@ services:
         VITE_USE_MOCK: "false"
         VITE_API_BASE_URL: ""
         VITE_AUTH_DISABLED: "false"
-        VITE_KEYCLOAK_URL: "${VITE_KEYCLOAK_URL:-http://136.111.39.179:8080}"
+        VITE_KEYCLOAK_URL: "${VITE_KEYCLOAK_URL:-https://auth.zedral.com}"
         VITE_KEYCLOAK_REALM: "${VITE_KEYCLOAK_REALM:-zedral}"
         VITE_KEYCLOAK_CLIENT_ID: "${VITE_KEYCLOAK_CLIENT_ID:-zedral-spa}"
     container_name: zedral-ops-console
@@ -189,7 +189,7 @@ services:
     container_name: zedral-nginx-gateway
     restart: unless-stopped
     ports:
-      - "8000:8000"
+      - "80:80"
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
     depends_on:
@@ -208,7 +208,7 @@ services:
     networks:
       - zedral-net
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:8000/health || exit 1"]
+      test: ["CMD-SHELL", "curl -f http://localhost:80/health || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 5

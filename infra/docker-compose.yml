@@ -96,6 +96,8 @@ services:
       KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN:-admin}
       KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-admin_dev_password}
       KC_DB: dev-mem
+      KC_HOSTNAME: https://auth.zedral.com
+      KC_PROXY_HEADERS: xforwarded
     volumes:
       - ./keycloak/realm-export.json:/opt/keycloak/data/import/realm-export.json:ro
     networks:

@@ -26,11 +26,15 @@
       "redirectUris": [
         "http://localhost:5173/*",
         "http://localhost:5174/*",
+        "https://ops.zedral.com/*",
+        "https://floor.zedral.com/*",
         "http://136.111.39.179:8000/*"
       ],
       "webOrigins": [
         "http://localhost:5173",
         "http://localhost:5174",
+        "https://ops.zedral.com",
+        "https://floor.zedral.com",
         "http://136.111.39.179:8000"
       ],
       "standardFlowEnabled": true,
