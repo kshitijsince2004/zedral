@@ -33,11 +33,23 @@ export const Route = createRootRoute({
     // Skip during SSR (no window available)
     if (!env.VITE_USE_MOCK && typeof window !== "undefined") {
       const authenticated = await authModule.init();
-      // If auth returned true (either real Keycloak or no-op), set default admin session
-      if (authenticated && !authModule.getToken()) {
-        // Auth disabled (no-op module) — set default admin session
+      if (authenticated) {
         const { useStore } = await import("@/state/store");
-        useStore.getState().setSession("admin", "admin");
+        const token = authModule.getToken();
+        if (token) {
+          // Real Keycloak auth — extract roles from token
+          try {
+            const payload = JSON.parse(atob(token.split(".")[1]));
+            const { mapKeycloakRole } = await import("@/lib/roleMapper");
+            const role = mapKeycloakRole(payload);
+            useStore.getState().setSession(payload.preferred_username || "user", role);
+          } catch {
+            useStore.getState().setSession("user", "admin");
+          }
+        } else {
+          // Auth disabled (no-op module) — set default admin session
+          useStore.getState().setSession("admin", "admin");
+        }
       }
     }
   },
